@@ -1,4 +1,4 @@
-# chatdemo
+# group chat demo
 
 A new Flutter project.
 
