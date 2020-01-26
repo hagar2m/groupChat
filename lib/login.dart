@@ -8,6 +8,7 @@ import './main.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'groupCreate.dart';
 
 class MyApp extends StatelessWidget {
   @override
@@ -19,6 +20,9 @@ class MyApp extends StatelessWidget {
       ),
       home: LoginScreen(title: 'CHAT DEMO'),
       debugShowCheckedModeBanner: false,
+      routes: {
+        GroupCreateScreen.routeName: (_) => GroupCreateScreen(),
+      },
     );
   }
 }
@@ -102,8 +106,7 @@ class LoginScreenState extends State<LoginScreen> {
           'nickname': firebaseUser.displayName,
           'photoUrl': firebaseUser.photoUrl,
           'id': firebaseUser.uid,
-          'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
-          'chattingWith': null
+          'groups': []
         });
 
         // Write data to local
@@ -161,15 +164,15 @@ class LoginScreenState extends State<LoginScreen> {
             // Loading
             Positioned(
               child: isLoading
-                  ? Container(
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(themeColor),
-                        ),
+                ? Container(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(themeColor),
                       ),
-                      color: Colors.white.withOpacity(0.8),
-                    )
-                  : SizedBox(),
+                    ),
+                    color: Colors.white.withOpacity(0.8),
+                  )
+                : SizedBox(),
             ),
           ],
         ));

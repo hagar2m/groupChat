@@ -15,6 +15,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import './test.dart';
+import './groupCreate.dart';
 
 void main() => runApp(MyApp());
 
@@ -31,18 +32,17 @@ class MainScreenState extends State<MainScreen> {
   MainScreenState({Key key, @required this.currentUserId});
 
   final String currentUserId;
+  
   final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
   final GoogleSignIn googleSignIn = GoogleSignIn();
 
   bool isLoading = false;
-  bool showSelect = false;
   List<Choice> choices = const <Choice>[
     const Choice(title: 'Settings', icon: Icons.settings),
     const Choice(title: 'Log out', icon: Icons.exit_to_app),
     const Choice(title: 'New group', icon: Icons.group_add),
   ];
-  List _selecteItems = List();
 
   @override
   void initState() {
@@ -53,7 +53,7 @@ class MainScreenState extends State<MainScreen> {
 
   void registerNotification() {
     firebaseMessaging.requestNotificationPermissions();
-
+  
     firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       print('onMessage: $message');
       showNotification(message['notification']);
@@ -128,6 +128,8 @@ class MainScreenState extends State<MainScreen> {
   void onItemMenuPress(Choice choice) {
     if (choice.title == 'Log out') {
       handleSignOut();
+    } else if (choice.title == 'New group') {
+      Navigator.pushNamed(context, GroupCreateScreen.routeName);
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (context) => Settings()));
     }
@@ -316,22 +318,7 @@ class MainScreenState extends State<MainScreen> {
                     return ListView.builder(
                       padding: EdgeInsets.all(10.0),
                       itemBuilder: (context, index) {
-                        print(snapshot.data.documents[index]['nickname']);
-                        // if(snapshot.data.documents[index]['nickname'] == 'Mohamed Hossam') {
-                         return CheckboxListTile(
-                           value: _selecteItems.contains(snapshot.data.documents[index]['id']),
-                           title: buildItem(context, snapshot.data.documents[index]),
-                           onChanged: (value) {
-                             print('value: $value');
-                             setState(() {
-                              _selecteItems.add(snapshot.data.documents[index]['id']);
-                             });
-                           },
-                         );
-                        //  buildItem(context, snapshot.data.documents[index]);
-
-                        // }
-                        // return SizedBox();
+                         return buildItem(context, snapshot.data.documents[index]);
                       },
                       itemCount: snapshot.data.documents.length,
                     );

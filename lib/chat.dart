@@ -92,7 +92,7 @@ class ChatScreenState extends State<ChatScreen> {
   readLocal() async {
     prefs = await SharedPreferences.getInstance();
     id = prefs.getString('id') ?? '';
-    print('my id: $id');
+    print('my id: $id');    
     print("----------------------------");
     if (id.hashCode <= peerId.hashCode) {
         groupChatId = '$id-$peerId';
