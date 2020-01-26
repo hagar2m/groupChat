@@ -177,7 +177,12 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
         'type': 'text',
       },
     });
-    Firestore.instance.collection('users').document(currentUserId).updateData({'groups': '$groupId'});
+
+    //  final QuerySnapshot result =
+    //       await Firestore.instance.collection('users').where('id', isEqualTo: currentUserId).getDocuments();
+    Firestore.instance.collection('users').document(currentUserId).updateData(
+      {'groups': FieldValue.arrayUnion([groupId])}
+    );
   }
 
   @override
