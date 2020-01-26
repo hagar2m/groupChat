@@ -47,7 +47,6 @@ class ChatScreenState extends State<ChatScreen> {
   ChatScreenState({ Key key, @required this.groupId });
 
   String groupId;
-  String peerAvatar;
   String currentUserId;
   String currentUserPhoto;
 
@@ -249,6 +248,7 @@ class ChatScreenState extends State<ChatScreen> {
         mainAxisAlignment: MainAxisAlignment.end,
       );
     } else {
+      print("document['photoFrom']: ${document['photoFrom']}");
       // Left (peer message)
       return Container(
         child: Column(
@@ -267,7 +267,7 @@ class ChatScreenState extends State<ChatScreen> {
                             height: 35.0,
                             padding: EdgeInsets.all(10.0),
                           ),
-                          imageUrl: peerAvatar,
+                          imageUrl: document['photoFrom'],
                           width: 35.0,
                           height: 35.0,
                           fit: BoxFit.cover,
