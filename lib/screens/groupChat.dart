@@ -12,55 +12,52 @@ import 'package:firebase_storage/firebase_storage.dart';
 import './fullPhoto.dart';
 import '../utils/colors.dart';
 
-class Chat extends StatelessWidget {
-  final String peerId;
-  final String peerAvatar;
+class GroupChat extends StatelessWidget {
+  final String groupId;
 
-  Chat({Key key, @required this.peerId, @required this.peerAvatar}) : super(key: key);
+  GroupChat({ Key key, @required this.groupId }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'CHAT',
+          '$groupId CHAT',
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: ChatScreen(
-        peerId: peerId,
-        peerAvatar: peerAvatar,
+        groupId: groupId,
       ),
     );
   }
 }
 
 class ChatScreen extends StatefulWidget {
-  final String peerId;
-  final String peerAvatar;
+  final String groupId;
 
-  ChatScreen({ Key key, @required this.peerId, @required this.peerAvatar }) : super(key: key);
+  ChatScreen({ Key key, @required this.groupId }) : super(key: key);
 
   @override
-  State createState() => ChatScreenState(peerId: peerId, peerAvatar: peerAvatar);
+  State createState() => ChatScreenState(groupId: groupId);
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  ChatScreenState({ Key key, @required this.peerId, @required this.peerAvatar });
+  ChatScreenState({ Key key, @required this.groupId });
 
-  String peerId;
+  String groupId;
   String peerAvatar;
-  String id;
+  String currentUserId;
+  String currentUserPhoto;
 
   var listMessage;
-  String groupChatId;
   SharedPreferences prefs;
 
   File imageFile;
-  bool isLoading;
-  bool isShowSticker;
-  String imageUrl;
+  bool isLoading = false;
+  bool isShowSticker = false;
+  String imageUrl = '';
 
   final TextEditingController textEditingController = TextEditingController();
   final ScrollController listScrollController = ScrollController();
@@ -71,15 +68,14 @@ class ChatScreenState extends State<ChatScreen> {
     super.initState();
     focusNode.addListener(onFocusChange);
 
-    groupChatId = '';
-
-    isLoading = false;
-    isShowSticker = false;
-    imageUrl = '';
-
     readLocal();
   }
 
+  @override
+  void dispose() {
+    focusNode.dispose();
+    super.dispose();
+  }
   void onFocusChange() {
     if (focusNode.hasFocus) {
       // Hide sticker when keyboard appear
@@ -91,16 +87,15 @@ class ChatScreenState extends State<ChatScreen> {
 
   readLocal() async {
     prefs = await SharedPreferences.getInstance();
-    id = prefs.getString('id') ?? '';
-    print('my id: $id');    
-    print("----------------------------");
-    if (id.hashCode <= peerId.hashCode) {
-        groupChatId = '$id-$peerId';
-    } else {
-        groupChatId = '$peerId-$id';
-    }
+    currentUserId = prefs.getString('id') ?? '';
+    currentUserPhoto = prefs.getString('photoUrl');
+    // if (id.hashCode <= peerId.hashCode) {
+    //     groupChatId = '$id-$peerId';
+    // } else {
+    //     groupChatId = '$peerId-$id';
+    // }
 
-    Firestore.instance.collection('users').document(id).updateData({'chattingWith': peerId});
+    // Firestore.instance.collection('users').document(id).updateData({'chattingWith': peerId});
 
     setState(() {});
   }
@@ -148,18 +143,17 @@ class ChatScreenState extends State<ChatScreen> {
     if (content.trim() != '') {
       textEditingController.clear();
 
-      var documentReference = Firestore.instance
-          .collection('messages')
-          .document(groupChatId)
-          .collection(groupChatId)
+      var documentReference = Firestore.instance.collection('groupMessages').document(widget.groupId)
+          .collection(widget.groupId)
           .document(DateTime.now().millisecondsSinceEpoch.toString());
 
       Firestore.instance.runTransaction((transaction) async {
         await transaction.set(
           documentReference,
           {
-            'idFrom': id,
-            'idTo': peerId,
+            'groupId': widget.groupId,
+            'idFrom': currentUserId,
+            'photoFrom': currentUserPhoto,
             'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
             'content': content,
             'type': type,
@@ -177,7 +171,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget buildItem(int index, DocumentSnapshot document) {
     print("index: $index - msg id: ${document['idFrom']}");
-    if (document['idFrom'] == id) {
+    if (document['idFrom'] == currentUserId) {
       // Right (my message)
       return Row(
         children: <Widget>[
@@ -375,7 +369,7 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   bool isLastMessageLeft(int index) {
-    if ((index > 0 && listMessage != null && listMessage[index - 1]['idFrom'] == id) || index == 0) {
+    if ((index > 0 && listMessage != null && listMessage[index - 1]['idFrom'] == currentUserId) || index == 0) {
       return true;
     } else {
       return false;
@@ -383,7 +377,7 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   bool isLastMessageRight(int index) {
-    if ((index > 0 && listMessage != null && listMessage[index - 1]['idFrom'] != id) || index == 0) {
+    if ((index > 0 && listMessage != null && listMessage[index - 1]['idFrom'] != currentUserId) || index == 0) {
       return true;
     } else {
       return false;
@@ -396,7 +390,7 @@ class ChatScreenState extends State<ChatScreen> {
         isShowSticker = false;
       });
     } else {
-      Firestore.instance.collection('users').document(id).updateData({'chattingWith': null});
+      Firestore.instance.collection('users').document(currentUserId).updateData({'chattingWith': null});
       Navigator.pop(context);
     }
 
@@ -618,13 +612,13 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget buildListMessage() {
     return Flexible(
-      child: groupChatId == ''
+      child: widget.groupId == ''
           ? Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColor)))
           : StreamBuilder(
               stream: Firestore.instance
-                  .collection('messages')
-                  .document(groupChatId)
-                  .collection(groupChatId)
+                  .collection('groupMessages')
+                  .document(widget.groupId)
+                  .collection(widget.groupId)
                   .orderBy('timestamp', descending: true)
                   .limit(20)
                   .snapshots(),

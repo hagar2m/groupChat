@@ -7,6 +7,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import './chat.dart';
+import './groupChat.dart';
+
 import '../utils/colors.dart';
 
 import './login.dart';
@@ -452,7 +454,12 @@ class HomeScreenState extends State<HomeScreen> {
 
   _buildGroupItem(Map item) {
     return InkWell(
-      // onTap: () => ,
+      onTap: () =>  Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GroupChat(
+            groupId: item['groupId'],
+          ))),
       child: Card(
         child: Container(
           padding: EdgeInsets.all(10.0),
