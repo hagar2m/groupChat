@@ -36,6 +36,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   @override
   void initState() {
     super.initState();
+
     registerNotification();
     configLocalNotification();
   }
@@ -57,6 +58,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     currentUserId = prefs.getString('id') ?? '';
+    _selecteItems.add(currentUserId);
 
     firebaseMessaging.getToken().then((token) {
       print('token: $token');
@@ -141,27 +143,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     // type: 0 = text, 1 = image, 2 = sticker
     var groupId =
         currentUserId + DateTime.now().millisecondsSinceEpoch.toString();
-    //   var documentReference = Firestore.instance
-    //       .collection('messages')
-    //       .document(groupId)
-    //       .collection(groupId)
-    //       .document(DateTime.now().millisecondsSinceEpoch.toString());
 
-    //   Firestore.instance.runTransaction((transaction) async {
-    //     await transaction.set(
-    //       documentReference,
-    //       {
-    //         'idFrom': currentUserId,
-    //         'idTo': _selecteItems[0],
-    //         'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-    //         'content': "Welcome To th Group caht",
-    //         'type': 0,
-    //         'data': {
-    //           'name': 'hagar mekky2'
-    //         }
-    //       },
-    //     );
-    //   });
     var prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('nickname') ?? '';
     Firestore.instance.collection('groupDetail').document(groupId).setData({
@@ -174,15 +156,17 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
         'idFrom': currentUserId,
         'content': "$name create this group",
         'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-        'type': 'text',
+        'type': 0,
       },
     });
 
-    //  final QuerySnapshot result =
-    //       await Firestore.instance.collection('users').where('id', isEqualTo: currentUserId).getDocuments();
-    Firestore.instance.collection('users').document(currentUserId).updateData(
-      {'groups': FieldValue.arrayUnion([groupId])}
-    );
+    for (var item in _selecteItems) {
+      Firestore.instance.collection('users').document(item).updateData(
+        {'groups': FieldValue.arrayUnion([groupId])}
+      );
+    }
+
+    Navigator.pop(context);
   }
 
   @override
