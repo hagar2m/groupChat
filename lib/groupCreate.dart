@@ -146,24 +146,38 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
 
     var prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('nickname') ?? '';
-    Firestore.instance.collection('groupDetail').document(groupId).setData({
-      'groupName': "$name - $currentUserId",
-      'photoUrl':
-          'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
-      'adminId': currentUserId,
-      'members': _selecteItems,
-      'recentMessage': {
-        'idFrom': currentUserId,
-        'content': "$name create this group",
-        'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-        'type': 0,
-      },
-    });
+    // Firestore.instance.collection('groupDetail').document(groupId).setData({
+    //   'groupName': "$name - $currentUserId",
+    //   'photoUrl':
+    //       'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
+    //   'adminId': currentUserId,
+    //   'members': _selecteItems,
+    //   'recentMessage': {
+    //     'idFrom': currentUserId,
+    //     'content': "$name create this group",
+    //     'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+    //     'type': 0,
+    //   },
+    // });
 
     for (var item in _selecteItems) {
-      Firestore.instance.collection('users').document(item).updateData(
-        {'groups': FieldValue.arrayUnion([groupId])}
-      );
+      Firestore.instance.collection('users').document(item).updateData({
+        'groups': FieldValue.arrayUnion([
+          { 'groupId': groupId,
+            'groupName': "$name - $currentUserId",
+            'photoUrl':
+                'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
+            'adminId': currentUserId,
+            'members': _selecteItems,
+            'recentMessage': {
+              'idFrom': currentUserId,
+              'content': "$name create this group",
+              'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+              'type': 0,
+            },
+          }
+        ])
+      });
     }
 
     Navigator.pop(context);

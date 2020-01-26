@@ -32,9 +32,10 @@ class MainScreenState extends State<MainScreen> {
   MainScreenState({Key key, @required this.currentUserId});
 
   final String currentUserId;
-  
+
   final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      new FlutterLocalNotificationsPlugin();
   final GoogleSignIn googleSignIn = GoogleSignIn();
 
   bool isLoading = false;
@@ -43,6 +44,7 @@ class MainScreenState extends State<MainScreen> {
     const Choice(title: 'Log out', icon: Icons.exit_to_app),
     const Choice(title: 'New group', icon: Icons.group_add),
   ];
+  List groups = [];
 
   @override
   void initState() {
@@ -53,7 +55,7 @@ class MainScreenState extends State<MainScreen> {
 
   void registerNotification() {
     firebaseMessaging.requestNotificationPermissions();
-  
+
     firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       print('onMessage: $message');
       showNotification(message['notification']);
@@ -68,24 +70,24 @@ class MainScreenState extends State<MainScreen> {
 
     firebaseMessaging.getToken().then((token) {
       print('token: $token');
-      Firestore.instance.collection('users').document(currentUserId).updateData({'pushToken': token});
+      Firestore.instance
+          .collection('users')
+          .document(currentUserId)
+          .updateData({'pushToken': token});
     }).catchError((err) {
       Fluttertoast.showToast(msg: err.message.toString());
     });
   }
 
   void configLocalNotification() {
-    var initializationSettingsAndroid = new AndroidInitializationSettings('app_icon');
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('app_icon');
     var initializationSettingsIOS = new IOSInitializationSettings(
-      onDidReceiveLocalNotification: onDidReceiveLocalNotification
-    );
+        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
     var initializationSettings = new InitializationSettings(
-      initializationSettingsAndroid, 
-      initializationSettingsIOS
-    );
+        initializationSettingsAndroid, initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onSelectNotification: onSelectNotification
-    );
+        onSelectNotification: onSelectNotification);
   }
 
   Future onSelectNotification(String payload) async {
@@ -104,24 +106,24 @@ class MainScreenState extends State<MainScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) => new CupertinoAlertDialog(
-            title: new Text(title),
-            content: new Text(body),
-            actions: [
-              CupertinoDialogAction(
-                isDefaultAction: true,
-                child: new Text('Ok'),
-                onPressed: () async {
-                  Navigator.of(context, rootNavigator: true).pop();
-                  await Navigator.push(
-                    context,
-                    new MaterialPageRoute(
-                      builder: (context) =>  TestScreen(payload),
-                    ),
-                  );
-                },
-              )
-            ],
-          ),
+        title: new Text(title),
+        content: new Text(body),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: new Text('Ok'),
+            onPressed: () async {
+              Navigator.of(context, rootNavigator: true).pop();
+              await Navigator.push(
+                context,
+                new MaterialPageRoute(
+                  builder: (context) => TestScreen(payload),
+                ),
+              );
+            },
+          )
+        ],
+      ),
     );
   }
 
@@ -131,13 +133,16 @@ class MainScreenState extends State<MainScreen> {
     } else if (choice.title == 'New group') {
       Navigator.pushNamed(context, GroupCreateScreen.routeName);
     } else {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Settings()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => Settings()));
     }
   }
 
   void showNotification(message) async {
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      Platform.isAndroid ? 'com.dfa.flutterchatdemo': 'com.duytq.flutterchatdemo',
+      Platform.isAndroid
+          ? 'com.dfa.flutterchatdemo'
+          : 'com.duytq.flutterchatdemo',
       'Flutter chat demo',
       'your channel description',
       playSound: true,
@@ -146,15 +151,11 @@ class MainScreenState extends State<MainScreen> {
       priority: Priority.High,
     );
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics =
-        new NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-      0, 
-      message['title'].toString(), 
-      message['body'].toString(), 
-      platformChannelSpecifics,
-      payload: json.encode(message)
-    );
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
+        message['body'].toString(), platformChannelSpecifics,
+        payload: json.encode(message));
   }
 
   Future<bool> onBackPress() {
@@ -167,7 +168,8 @@ class MainScreenState extends State<MainScreen> {
         context: context,
         builder: (BuildContext context) {
           return SimpleDialog(
-            contentPadding: EdgeInsets.only(left: 0.0, right: 0.0, top: 0.0, bottom: 0.0),
+            contentPadding:
+                EdgeInsets.only(left: 0.0, right: 0.0, top: 0.0, bottom: 0.0),
             children: <Widget>[
               Container(
                 color: themeColor,
@@ -186,7 +188,10 @@ class MainScreenState extends State<MainScreen> {
                     ),
                     Text(
                       'Exit app',
-                      style: TextStyle(color: Colors.white, fontSize: 18.0, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold),
                     ),
                     Text(
                       'Are you sure to exit app?',
@@ -210,7 +215,8 @@ class MainScreenState extends State<MainScreen> {
                     ),
                     Text(
                       'CANCEL',
-                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: primaryColor, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -230,7 +236,8 @@ class MainScreenState extends State<MainScreen> {
                     ),
                     Text(
                       'YES',
-                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: primaryColor, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -259,8 +266,9 @@ class MainScreenState extends State<MainScreen> {
       isLoading = false;
     });
 
-    Navigator.of(context)
-        .pushAndRemoveUntil(MaterialPageRoute(builder: (context) => MyApp()), (Route<dynamic> route) => false);
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => MyApp()),
+        (Route<dynamic> route) => false);
   }
 
   @override
@@ -293,8 +301,7 @@ class MainScreenState extends State<MainScreen> {
                           style: TextStyle(color: primaryColor),
                         ),
                       ],
-                    )
-                  );
+                    ));
               }).toList();
             },
           ),
@@ -305,9 +312,11 @@ class MainScreenState extends State<MainScreen> {
           children: <Widget>[
             // List
             Container(
+              // height: MediaQuery.of(context).size.height,
               child: StreamBuilder(
                 stream: Firestore.instance.collection('users').snapshots(),
                 builder: (context, snapshot) {
+                    
                   if (!snapshot.hasData) {
                     return Center(
                       child: CircularProgressIndicator(
@@ -315,12 +324,46 @@ class MainScreenState extends State<MainScreen> {
                       ),
                     );
                   } else {
-                    return ListView.builder(
-                      padding: EdgeInsets.all(10.0),
-                      itemBuilder: (context, index) {
-                         return buildItem(context, snapshot.data.documents[index]);
-                      },
-                      itemCount: snapshot.data.documents.length,
+                    List users = snapshot.data.documents;
+                    var _user =  users.where((item) => item['id'] == currentUserId).toList()[0];
+                    groups = _user['groups'];
+                    return Column(
+                      children: <Widget>[
+                        Flexible(
+                            child: ListView.builder(
+                            padding: EdgeInsets.all(10.0),
+                            itemBuilder: (context, index) {
+                              if ( snapshot.data.documents[index]['id'] != currentUserId) {
+                                return buildItem(
+                                  context, snapshot.data.documents[index]
+                                );
+                              } 
+                              return SizedBox();
+                            },
+                            itemCount: snapshot.data.documents.length,
+                        )),
+
+                        groups.length > 0 ?
+                          Container(
+                            alignment: Alignment.topLeft,
+                            padding: EdgeInsets.all(10.0),
+                            child: Text('Groups:', textAlign: TextAlign.left,),
+                          ) : 
+                          SizedBox(),
+
+                        groups.length > 0 ?
+                        Expanded(
+                          // flex: 2,
+                          child: ListView.builder(
+                            padding: EdgeInsets.all(10.0),
+                            itemCount: groups.length,
+                            itemBuilder: (context, index) {
+                              return _buildGroupItem(groups[index]);
+                            },
+                        )
+                        ) 
+                        : SizedBox()
+                      ],
                     );
                   }
                 },
@@ -332,7 +375,9 @@ class MainScreenState extends State<MainScreen> {
               child: isLoading
                   ? Container(
                       child: Center(
-                        child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(themeColor)),
+                        child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(themeColor)),
                       ),
                       color: Colors.white.withOpacity(0.8),
                     )
@@ -346,82 +391,120 @@ class MainScreenState extends State<MainScreen> {
   }
 
   Widget buildItem(BuildContext context, DocumentSnapshot document) {
-    if (document['id'] == currentUserId) {
-      return Container();
-    } else {
-      return Container(
-        child: FlatButton(
+ 
+    return Container(
+      child: FlatButton(
+        child: Row(
+          children: <Widget>[
+            _buildImage(document['photoUrl']),
+
+            Flexible(
+              child: Container(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      child: Text(
+                        'Nickname: ${document['nickname']}',
+                        style: TextStyle(color: primaryColor),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
+                    ),
+                    Container(
+                      child: Text(
+                        'About me: ${document['aboutMe'] ?? 'Not available'}',
+                        style: TextStyle(color: primaryColor),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
+                    )
+                  ],
+                ),
+                margin: EdgeInsets.only(left: 20.0),
+              ),
+            ),
+          ],
+        ),
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => Chat(
+                        peerId: document.documentID,
+                        peerAvatar: document['photoUrl'],
+                      )));
+        },
+        color: greyColor2,
+        padding: EdgeInsets.fromLTRB(25.0, 10.0, 25.0, 10.0),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      ),
+      margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
+    );
+  }
+
+  _buildGroupItem(Map item) {
+    return InkWell(
+      // onTap: () => ,
+      child: Card(
+        child: Container(
+          padding: EdgeInsets.all(10.0),
           child: Row(
             children: <Widget>[
-              Material(
-                child: document['photoUrl'] != null
-                    ? CachedNetworkImage(
-                        placeholder: (context, url) => Container(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.0,
-                            valueColor: AlwaysStoppedAnimation<Color>(themeColor),
-                          ),
-                          width: 50.0,
-                          height: 50.0,
-                          padding: EdgeInsets.all(15.0),
-                        ),
-                        imageUrl: document['photoUrl'],
-                        width: 50.0,
-                        height: 50.0,
-                        fit: BoxFit.cover,
-                      )
-                    : Icon(
-                        Icons.account_circle,
-                        size: 50.0,
-                        color: greyColor,
-                      ),
-                borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                clipBehavior: Clip.hardEdge,
-              ),
-              Flexible(
-                child: Container(
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        child: Text(
-                          'Nickname: ${document['nickname']}',
-                          style: TextStyle(color: primaryColor),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
-                      ),
-                      Container(
-                        child: Text(
-                          'About me: ${document['aboutMe'] ?? 'Not available'}',
-                          style: TextStyle(color: primaryColor),
-                        ),
-                        alignment: Alignment.centerLeft,
-                        margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
-                      )
-                    ],
-                  ),
-                  margin: EdgeInsets.only(left: 20.0),
+              _buildImage(item['photoUrl']),
+
+              SizedBox(width: 20.0),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      item['groupName']
+                    ),
+                    SizedBox(height: 10.0),
+                    Text(
+                      item['recentMessage']['content']
+                    ),
+                  ],
                 ),
-              ),
+              )
+              
             ],
           ),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => Chat(
-                      peerId: document.documentID,
-                      peerAvatar: document['photoUrl'],
-                    )));
-          },
-          color: greyColor2,
-          padding: EdgeInsets.fromLTRB(25.0, 10.0, 25.0, 10.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
         ),
-        margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
-      );
-    }
+      ),
+    );
   }
+
+  _buildImage(String imgUrl) {
+    return Material(
+              child: imgUrl != null
+                  ? CachedNetworkImage(
+                      placeholder: (context, url) => Container(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.0,
+                          valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                        ),
+                        width: 50.0,
+                        height: 50.0,
+                        padding: EdgeInsets.all(15.0),
+                      ),
+                      imageUrl: imgUrl,
+                      width: 50.0,
+                      height: 50.0,
+                      fit: BoxFit.cover,
+                    )
+                  : Icon(
+                      Icons.account_circle,
+                      size: 50.0,
+                      color: greyColor,
+                    ),
+              borderRadius: BorderRadius.all(Radius.circular(25.0)),
+              clipBehavior: Clip.hardEdge,
+            );
+  }
+
 }
 
 class Choice {
