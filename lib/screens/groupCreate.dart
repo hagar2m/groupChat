@@ -7,12 +7,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import './chat.dart';
-import './const.dart';
+// import './chat.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import './test.dart';
+import '../test.dart';
+import '../utils/colors.dart';
 
 class GroupCreateScreen extends StatefulWidget {
   static String routeName = '/groupchat';
@@ -146,20 +146,6 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
 
     var prefs = await SharedPreferences.getInstance();
     String name = prefs.getString('nickname') ?? '';
-    // Firestore.instance.collection('groupDetail').document(groupId).setData({
-    //   'groupName': "$name - $currentUserId",
-    //   'photoUrl':
-    //       'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
-    //   'adminId': currentUserId,
-    //   'members': _selecteItems,
-    //   'recentMessage': {
-    //     'idFrom': currentUserId,
-    //     'content': "$name create this group",
-    //     'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-    //     'type': 0,
-    //   },
-    // });
-
     for (var item in _selecteItems) {
       Firestore.instance.collection('users').document(item).updateData({
         'groups': FieldValue.arrayUnion([
@@ -267,74 +253,52 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
 
   Widget buildItem(BuildContext context, DocumentSnapshot document) {
     return Container(
-      child: FlatButton(
-        child: Row(
-          children: <Widget>[
-            Material(
-              child: document['photoUrl'] != null
-                  ? CachedNetworkImage(
-                      placeholder: (context, url) => Container(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 1.0,
-                          valueColor: AlwaysStoppedAnimation<Color>(themeColor),
-                        ),
-                        width: 50.0,
-                        height: 50.0,
-                        padding: EdgeInsets.all(15.0),
+      child: Row(
+        children: <Widget>[
+          Material(
+            child: document['photoUrl'] != null
+                ? CachedNetworkImage(
+                    placeholder: (context, url) => Container(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.0,
+                        valueColor: AlwaysStoppedAnimation<Color>(themeColor),
                       ),
-                      imageUrl: document['photoUrl'],
                       width: 50.0,
                       height: 50.0,
-                      fit: BoxFit.cover,
-                    )
-                  : Icon(
-                      Icons.account_circle,
-                      size: 50.0,
-                      color: greyColor,
+                      padding: EdgeInsets.all(15.0),
                     ),
-              borderRadius: BorderRadius.all(Radius.circular(25.0)),
-              clipBehavior: Clip.hardEdge,
-            ),
-            Flexible(
-              child: Container(
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      child: Text(
-                        'Nickname: ${document['nickname']}',
-                        style: TextStyle(color: primaryColor),
-                      ),
-                      alignment: Alignment.centerLeft,
-                      margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
+                    imageUrl: document['photoUrl'],
+                    width: 50.0,
+                    height: 50.0,
+                    fit: BoxFit.cover,
+                  )
+                : Icon(
+                    Icons.account_circle,
+                    size: 50.0,
+                    color: greyColor,
+                  ),
+            borderRadius: BorderRadius.all(Radius.circular(25.0)),
+            clipBehavior: Clip.hardEdge,
+          ),
+          Flexible(
+            child: Container(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    child: Text(
+                      '${document['nickname']}',
+                      style: TextStyle(color: primaryColor),
                     ),
-                    Container(
-                      child: Text(
-                        'About me: ${document['aboutMe'] ?? 'Not available'}',
-                        style: TextStyle(color: primaryColor),
-                      ),
-                      alignment: Alignment.centerLeft,
-                      margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
-                    )
-                  ],
-                ),
-                margin: EdgeInsets.only(left: 20.0),
+                    alignment: Alignment.centerLeft,
+                    margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
+                  ),
+                
+                ],
               ),
+              margin: EdgeInsets.only(left: 20.0),
             ),
-          ],
-        ),
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => Chat(
-                        peerId: document.documentID,
-                        peerAvatar: document['photoUrl'],
-                      )));
-        },
-        color: greyColor2,
-        padding: EdgeInsets.fromLTRB(25.0, 10.0, 25.0, 10.0),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+          ),
+        ],
       ),
       margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
     );
