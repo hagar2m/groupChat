@@ -8,7 +8,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import './chat.dart';
 import './groupChat.dart';
-
 import '../utils/colors.dart';
 
 import './login.dart';
@@ -399,12 +398,13 @@ class HomeScreenState extends State<HomeScreen> {
         onWillPop: onBackPress,
       ),
       floatingActionButton: FloatingActionButton(
-        // backgroundColor: ,
-        child: Icon(Icons.message),
-        onPressed: () {
-          print("object");
-        },
-      ),
+              backgroundColor: themeColor,
+              child: Icon(Icons.message),
+              onPressed: (){
+                print("object");
+                Navigator.pushNamed(context, GroupCreateScreen.routeName);
+              },
+            ),
     );
   }
 
