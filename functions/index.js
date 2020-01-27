@@ -117,13 +117,14 @@ exports.sendNotification = functions.firestore
                   // Let push to the target device
                   admin
                     .messaging()
-                    .sendToDevice(userTo.data().pushToken, payload)
+                    .sendToTopic('groupTopic', payload)
                     .then(response => {
                       console.log('Successfully sent message:', response)
                     })
                     .catch(error => {
                       console.log('Error sending message:', error)
                     })
+
                 })
               })
           } else {
