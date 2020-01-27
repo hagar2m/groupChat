@@ -76,6 +76,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
           )
         ],
       ),
+      
       body: Stack(
         children: <Widget>[
           // List
