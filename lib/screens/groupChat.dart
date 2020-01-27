@@ -88,13 +88,6 @@ class ChatScreenState extends State<ChatScreen> {
     prefs = await SharedPreferences.getInstance();
     currentUserId = prefs.getString('id') ?? '';
     currentUserPhoto = prefs.getString('photoUrl');
-    // if (id.hashCode <= peerId.hashCode) {
-    //     groupChatId = '$id-$peerId';
-    // } else {
-    //     groupChatId = '$peerId-$id';
-    // }
-
-    // Firestore.instance.collection('users').document(id).updateData({'chattingWith': peerId});
 
     setState(() {});
   }
