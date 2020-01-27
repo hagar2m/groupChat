@@ -120,43 +120,43 @@ class LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.title,
-            style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
+    appBar: AppBar(
+      title: Text(
+        widget.title,
+        style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+      ),
+      centerTitle: true,
+    ),
+    body: Stack(
+      children: <Widget>[
+        Center(
+          child: FlatButton(
+              onPressed: handleSignIn,
+              child: Text(
+                'SIGN IN WITH GOOGLE',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              color: Color(0xffdd4b39),
+              highlightColor: Color(0xffff7f7f),
+              splashColor: Colors.transparent,
+              textColor: Colors.white,
+              padding: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0)),
         ),
-        body: Stack(
-          children: <Widget>[
-            Center(
-              child: FlatButton(
-                  onPressed: handleSignIn,
-                  child: Text(
-                    'SIGN IN WITH GOOGLE',
-                    style: TextStyle(fontSize: 16.0),
-                  ),
-                  color: Color(0xffdd4b39),
-                  highlightColor: Color(0xffff7f7f),
-                  splashColor: Colors.transparent,
-                  textColor: Colors.white,
-                  padding: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0)),
-            ),
 
-            // Loading
-            Positioned(
-              child: isLoading
-                ? Container(
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(themeColor),
-                      ),
-                    ),
-                    color: Colors.white.withOpacity(0.8),
-                  )
-                : SizedBox(),
-            ),
-          ],
-        ));
+        // Loading
+        Positioned(
+          child: isLoading
+            ? Container(
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                  ),
+                ),
+                color: Colors.white.withOpacity(0.8),
+              )
+            : SizedBox(),
+        ),
+      ],
+    ));
   }
 }

@@ -41,9 +41,18 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     configLocalNotification();
   }
 
+  void fcmSubscribe() {
+    firebaseMessaging.subscribeToTopic('groupTopic');
+  }
+
+  void fcmUnSubscribe() {
+    firebaseMessaging.unsubscribeFromTopic('groupTopic');
+  }
+
+
   void registerNotification() async {
     firebaseMessaging.requestNotificationPermissions();
-
+    fcmSubscribe();
     firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       print('onMessage: $message');
       showNotification(message['notification']);
