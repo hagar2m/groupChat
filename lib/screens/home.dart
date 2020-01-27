@@ -308,12 +308,12 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    
       body: WillPopScope(
         child: Stack(
           children: <Widget>[
             // List
             Container(
-              // height: MediaQuery.of(context).size.height,
               child: StreamBuilder(
                 stream: Firestore.instance.collection('users').snapshots(),
                 builder: (context, snapshot) {

@@ -11,6 +11,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 import './fullPhoto.dart';
 import '../utils/colors.dart';
+import '../widgets/widgets.dart';
 
 class Chat extends StatelessWidget {
   final String peerId;
@@ -435,97 +436,25 @@ class ChatScreenState extends State<ChatScreen> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              FlatButton(
-                onPressed: () => onSendMessage('mimi1', 2),
-                child: new Image.asset(
-                  'images/mimi1.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              FlatButton(
-                onPressed: () => onSendMessage('mimi2', 2),
-                child: new Image.asset(
-                  'images/mimi2.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              FlatButton(
-                onPressed: () => onSendMessage('mimi3', 2),
-                child: new Image.asset(
-                  'images/mimi3.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              )
+              StickerImage('mimi1',  this.onSendMessage),
+              StickerImage('mimi2',  this.onSendMessage),
+              StickerImage('mimi3',  this.onSendMessage),
             ],
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           ),
           Row(
             children: <Widget>[
-              FlatButton(
-                onPressed: () => onSendMessage('mimi4', 2),
-                child: new Image.asset(
-                  'images/mimi4.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              FlatButton(
-                onPressed: () => onSendMessage('mimi5', 2),
-                child: new Image.asset(
-                  'images/mimi5.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              FlatButton(
-                onPressed: () => onSendMessage('mimi6', 2),
-                child: new Image.asset(
-                  'images/mimi6.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              )
+              StickerImage('mimi4',  this.onSendMessage),
+              StickerImage('mimi5',  this.onSendMessage),
+              StickerImage('mimi6',  this.onSendMessage),
             ],
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           ),
           Row(
             children: <Widget>[
-              FlatButton(
-                onPressed: () => onSendMessage('mimi7', 2),
-                child: new Image.asset(
-                  'images/mimi7.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              FlatButton(
-                onPressed: () => onSendMessage('mimi8', 2),
-                child: new Image.asset(
-                  'images/mimi8.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              FlatButton(
-                onPressed: () => onSendMessage('mimi9', 2),
-                child: new Image.asset(
-                  'images/mimi9.gif',
-                  width: 50.0,
-                  height: 50.0,
-                  fit: BoxFit.cover,
-                ),
-              )
+              StickerImage('mimi7',  this.onSendMessage),
+              StickerImage('mimi8',  this.onSendMessage),
+              StickerImage('mimi9',  this.onSendMessage),
             ],
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           )
@@ -647,3 +576,5 @@ class ChatScreenState extends State<ChatScreen> {
     );
   }
 }
+
+
