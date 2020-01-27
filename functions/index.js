@@ -14,7 +14,7 @@ exports.sendNotification = functions.firestore
     const idFrom = doc.idFrom
     const idTo = doc.idTo
     const contentMessage = doc.content
-    const data = doc.data
+    // const data = doc.data
 
     // Get push token user to (receive)
     admin
