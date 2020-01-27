@@ -14,7 +14,7 @@ exports.sendNotification = functions.firestore
     const idFrom = doc.idFrom
     const idTo = doc.idTo
     const contentMessage = doc.content
-    const data = doc.data
+    // const data = doc.data
 
     // Get push token user to (receive)
     admin
@@ -42,7 +42,7 @@ exports.sendNotification = functions.firestore
                       badge: '1',
                       sound: 'default'
                     },
-                    data: data 
+                    // data: data 
                   }
                   // Let push to the target device
                   admin
@@ -68,8 +68,7 @@ exports.sendNotification = functions.firestore
   })
 
 
-  /////////////////////////////////
-
+  //////////////// group message notification /////////////////
 
   exports.sendGroupNotification = functions.firestore
   .document('groupMessages/{groupId1}/{groupId2}/{message}')
@@ -81,9 +80,8 @@ exports.sendNotification = functions.firestore
     console.log(doc)
 
     const idFrom = doc.idFrom
-    // const idTo = doc.idTo
     const contentMessage = doc.content
-    const data = doc.data
+    // const data = doc.data
 
     // Get push token user to (receive)
     const payload = {
@@ -93,12 +91,12 @@ exports.sendNotification = functions.firestore
         badge: '1',
         sound: 'default'
       },
-      data: data 
+      // data: data 
     }
 
     admin
       .messaging()
-      .sendToTopic('groupTopic', payload)
+      .sendToTopic(groupId1, payload)
       .then(response => {
         console.log('Successfully sent message:', response)
       })
@@ -106,100 +104,5 @@ exports.sendNotification = functions.firestore
         console.log('Error sending group message:', error)
       })
       
-    // admin
-    //   .firestore()
-    //   .collection('users')
-    //   .where('id', '==', idTo)
-    //   .get()
-    //   .then(querySnapshot => {
-    //     querySnapshot.forEach(userTo => {
-    //       console.log(`Found user to: ${userTo.data().nickname}`)
-    //       if (userTo.data().pushToken && userTo.data().chattingWith !== idFrom) {
-    //         // Get info user from (sent)
-    //         admin
-    //           .firestore()
-    //           .collection('users')
-    //           .where('id', '==', idFrom)
-    //           .get()
-    //           .then(querySnapshot2 => {
-    //             querySnapshot2.forEach(userFrom => {
-    //               console.log(`Found user from: ${userFrom.data().nickname}`)
-    //               const payload = {
-    //                 notification: {
-    //                   title: `You have a message from "${userFrom.data().nickname}"`,
-    //                   body: contentMessage,
-    //                   badge: '1',
-    //                   sound: 'default'
-    //                 },
-    //                 data: data 
-    //               }
-    //               // Let push to the target device
-    //               admin
-    //                 .messaging()
-    //                 .sendToTopic('groupTopic', payload)
-    //                 .then(response => {
-    //                   console.log('Successfully sent message:', response)
-    //                 })
-    //                 .catch(error => {
-    //                   console.log('Error sending message:', error)
-    //                 })
-
-    //             })
-    //           })
-    //       } else {
-    //         console.log('Can not find pushToken target user')
-    //       }
-    //     })
-    //   })
-
-
-
-    // admin
-    //   .firestore()
-    //   .collection('users')
-    //   .where('id', '==', idTo)
-    //   .get()
-    //   .then(querySnapshot => {
-    //     querySnapshot.forEach(userTo => {
-    //       console.log(`Found user to: ${userTo.data().nickname}`)
-    //       if (userTo.data().pushToken && userTo.data().chattingWith !== idFrom) {
-    //         // Get info user from (sent)
-    //         admin
-    //           .firestore()
-    //           .collection('users')
-    //           .where('id', '==', idFrom)
-    //           .get()
-    //           .then(querySnapshot2 => {
-    //             querySnapshot2.forEach(userFrom => {
-    //               console.log(`Found user from: ${userFrom.data().nickname}`)
-    //               const payload = {
-    //                 notification: {
-    //                   title: `You have a message from "${userFrom.data().nickname}"`,
-    //                   body: contentMessage,
-    //                   badge: '1',
-    //                   sound: 'default'
-    //                 },
-    //                 data: data 
-    //               }
-    //               // Let push to the target device
-    //               admin
-    //                 .messaging()
-    //                 .sendToDevice(userTo.data().pushToken, payload)
-    //                 .then(response => {
-    //                   console.log('Successfully sent message:', response)
-    //                 })
-    //                 .catch(error => {
-    //                   console.log('Error sending message:', error)
-    //                 })
-
-                    
-               
-    //             })
-    //           })
-    //       } else {
-    //         console.log('Can not find pushToken target user')
-    //       }
-    //     })
-    //   })
     return null
   })
