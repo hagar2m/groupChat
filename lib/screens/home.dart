@@ -308,7 +308,6 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    
       body: WillPopScope(
         child: Stack(
           children: <Widget>[
@@ -317,7 +316,6 @@ class HomeScreenState extends State<HomeScreen> {
               child: StreamBuilder(
                 stream: Firestore.instance.collection('users').snapshots(),
                 builder: (context, snapshot) {
-                    
                   if (!snapshot.hasData) {
                     return Center(
                       child: CircularProgressIndicator(
@@ -326,52 +324,56 @@ class HomeScreenState extends State<HomeScreen> {
                     );
                   } else {
                     List users = snapshot.data.documents;
-                    var _user =  users.where((item) => item['id'] == currentUserId).toList()[0];
+                    var _user = users
+                        .where((item) => item['id'] == currentUserId)
+                        .toList()[0];
                     groups = _user['groups'];
                     return Column(
                       children: <Widget>[
-                        users.length > 0 ?
-                        Container(
-                          alignment: Alignment.topLeft,
-                          padding: EdgeInsets.all(10.0),
-                          child: Text('Users:', textAlign: TextAlign.left,),
-                        ) : 
-                        SizedBox(),
-
+                        users.length > 0
+                            ? Container(
+                                alignment: Alignment.topLeft,
+                                padding: EdgeInsets.all(10.0),
+                                child: Text(
+                                  'Users:',
+                                  textAlign: TextAlign.left,
+                                ),
+                              )
+                            : SizedBox(),
                         Flexible(
                             child: ListView.builder(
-                            padding: EdgeInsets.all(10.0),
-                            itemBuilder: (context, index) {
-                              if ( snapshot.data.documents[index]['id'] != currentUserId) {
-                                return buildItem(
-                                  context, snapshot.data.documents[index]
-                                );
-                              } 
-                              return SizedBox();
-                            },
-                            itemCount: snapshot.data.documents.length,
+                          padding: EdgeInsets.all(10.0),
+                          itemBuilder: (context, index) {
+                            if (snapshot.data.documents[index]['id'] !=
+                                currentUserId) {
+                              return buildItem(
+                                  context, snapshot.data.documents[index]);
+                            }
+                            return SizedBox();
+                          },
+                          itemCount: snapshot.data.documents.length,
                         )),
-
-                        groups.length > 0 ?
-                          Container(
-                            alignment: Alignment.topLeft,
-                            padding: EdgeInsets.all(10.0),
-                            child: Text('Groups:', textAlign: TextAlign.left,),
-                          ) : 
-                          SizedBox(),
-
-                        groups.length > 0 ?
-                        Expanded(
-                          // flex: 2,
-                          child: ListView.builder(
-                            padding: EdgeInsets.all(10.0),
-                            itemCount: groups.length,
-                            itemBuilder: (context, index) {
-                              return _buildGroupItem(groups[index]);
-                            },
-                        )
-                        ) 
-                        : SizedBox()
+                        groups.length > 0
+                            ? Container(
+                                alignment: Alignment.topLeft,
+                                padding: EdgeInsets.all(10.0),
+                                child: Text(
+                                  'Groups:',
+                                  textAlign: TextAlign.left,
+                                ),
+                              )
+                            : SizedBox(),
+                        groups.length > 0
+                            ? Expanded(
+                                // flex: 2,
+                                child: ListView.builder(
+                                padding: EdgeInsets.all(10.0),
+                                itemCount: groups.length,
+                                itemBuilder: (context, index) {
+                                  return _buildGroupItem(groups[index]);
+                                },
+                              ))
+                            : SizedBox()
                       ],
                     );
                   }
@@ -397,23 +399,21 @@ class HomeScreenState extends State<HomeScreen> {
         onWillPop: onBackPress,
       ),
       floatingActionButton: FloatingActionButton(
-              // backgroundColor: ,
-              child: Icon(Icons.message),
-              onPressed: (){
-                print("object");
-              },
-            ),
+        // backgroundColor: ,
+        child: Icon(Icons.message),
+        onPressed: () {
+          print("object");
+        },
+      ),
     );
   }
 
   Widget buildItem(BuildContext context, DocumentSnapshot document) {
- 
     return Container(
       child: FlatButton(
         child: Row(
           children: <Widget>[
             ImageAvatar(imgUrl: document['photoUrl']),
-
             Flexible(
               child: Container(
                 child: Column(
@@ -461,48 +461,36 @@ class HomeScreenState extends State<HomeScreen> {
 
   _buildGroupItem(Map item) {
     return InkWell(
-      onTap: () =>  Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GroupChat(
-            groupId: item['groupId'],
-          ))),
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupChat(
+                    groupId: item['groupId'],
+                  ))),
       child: Card(
         child: Container(
           padding: EdgeInsets.all(10.0),
           child: Row(
             children: <Widget>[
               ImageAvatar(imgUrl: item['photoUrl']),
-
               SizedBox(width: 20.0),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(
-                      item['groupName']
-                    ),
+                    Text(item['groupName']),
                     SizedBox(height: 10.0),
-                    Text(
-                      item['recentMessage']['content']
-                    ),
+                    Text(item['recentMessage']['content']),
                   ],
                 ),
               )
-              
             ],
           ),
         ),
       ),
     );
   }
-
-
-
 }
-
-
 
 class Choice {
   const Choice({this.title, this.icon});

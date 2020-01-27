@@ -1,16 +1,10 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import '../test.dart';
+
 import '../utils/colors.dart';
 
 class GroupCreateScreen extends StatefulWidget {
@@ -23,9 +17,6 @@ class GroupCreateScreen extends StatefulWidget {
 
 class GroupCreateScreenState extends State<GroupCreateScreen> {
   final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      new FlutterLocalNotificationsPlugin();
-  final GoogleSignIn googleSignIn = GoogleSignIn();
 
   bool isLoading = false;
   bool showSelect = false;
@@ -35,106 +26,6 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   @override
   void initState() {
     super.initState();
-
-    registerNotification();
-    configLocalNotification();
-  }
-
-  void registerNotification() async {
-    firebaseMessaging.requestNotificationPermissions();
-    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
-      print('onMessage: $message');
-      showNotification(message['notification']);
-      return;
-    }, onResume: (Map<String, dynamic> message) {
-      print('onResume: $message');
-      return;
-    }, onLaunch: (Map<String, dynamic> message) {
-      print('onLaunch: $message');
-      return;
-    });
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    currentUserId = prefs.getString('id') ?? '';
-    _selecteItems.add(currentUserId);
-
-    firebaseMessaging.getToken().then((token) {
-      print('token: $token');
-      Firestore.instance
-          .collection('users')
-          .document(currentUserId)
-          .updateData({'pushToken': token});
-    }).catchError((err) {
-      Fluttertoast.showToast(msg: err.message.toString());
-    });
-  }
-
-  void configLocalNotification() {
-    var initializationSettingsAndroid =
-        new AndroidInitializationSettings('app_icon');
-    var initializationSettingsIOS = new IOSInitializationSettings(
-        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-    var initializationSettings = new InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
-  }
-
-  Future onSelectNotification(String payload) async {
-    if (payload != null) {
-      debugPrint('notification payload: ' + payload);
-    }
-    await Navigator.push(
-      context,
-      new MaterialPageRoute(builder: (context) => TestScreen(payload)),
-    );
-  }
-
-  Future onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) async {
-    // display a dialog with the notification details, tap ok to go to another page
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => new CupertinoAlertDialog(
-        title: new Text(title),
-        content: new Text(body),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            child: new Text('Ok'),
-            onPressed: () async {
-              Navigator.of(context, rootNavigator: true).pop();
-              await Navigator.push(
-                context,
-                new MaterialPageRoute(
-                  builder: (context) => TestScreen(payload),
-                ),
-              );
-            },
-          )
-        ],
-      ),
-    );
-  }
-
-  void showNotification(message) async {
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      Platform.isAndroid
-          ? 'com.dfa.flutterchatdemo'
-          : 'com.duytq.flutterchatdemo',
-      'Flutter chat demo',
-      'your channel description',
-      playSound: true,
-      enableVibration: true,
-      importance: Importance.Max,
-      priority: Priority.High,
-    );
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
-        message['body'].toString(), platformChannelSpecifics,
-        payload: json.encode(message));
   }
 
   void finishChoosing() async {
@@ -147,7 +38,8 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     for (var item in _selecteItems) {
       Firestore.instance.collection('users').document(item).updateData({
         'groups': FieldValue.arrayUnion([
-          { 'groupId': groupId,
+          {
+            'groupId': groupId,
             'groupName': "$name - $currentUserId",
             'photoUrl':
                 'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
@@ -291,7 +183,6 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
                     alignment: Alignment.centerLeft,
                     margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
                   ),
-                
                 ],
               ),
               margin: EdgeInsets.only(left: 20.0),
