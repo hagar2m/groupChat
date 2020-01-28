@@ -329,7 +329,6 @@ class HomeScreenState extends State<HomeScreen> {
                     var _user = users
                         .where((item) => item['id'] == currentUserId)
                         .toList()[0];
-                    groups = _user['groups'];
                     return Column(
                       children: <Widget>[
                         users.length > 0
@@ -355,27 +354,7 @@ class HomeScreenState extends State<HomeScreen> {
                           },
                           itemCount: snapshot.data.documents.length,
                         )),
-                        groups.length > 0
-                            ? Container(
-                                alignment: Alignment.topLeft,
-                                padding: EdgeInsets.all(10.0),
-                                child: Text(
-                                  'Groups:',
-                                  textAlign: TextAlign.left,
-                                ),
-                              )
-                            : SizedBox(),
-                        groups.length > 0
-                            ? Expanded(
-                                // flex: 2,
-                                child: ListView.builder(
-                                padding: EdgeInsets.all(10.0),
-                                itemCount: groups.length,
-                                itemBuilder: (context, index) {
-                                  return _buildGroupItem(groups[index]);
-                                },
-                              ))
-                            : SizedBox()
+                       
                       ],
                     );
                   }
