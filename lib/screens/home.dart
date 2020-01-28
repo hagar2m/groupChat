@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'package:chatdemo/screens/allUsers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -404,7 +405,7 @@ class HomeScreenState extends State<HomeScreen> {
         child: Icon(Icons.message),
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(
-            builder: (_) => GroupCreateScreen(isGroup: false,)
+            builder: (_) => AllUsers()
           ));
         },
       ),

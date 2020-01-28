@@ -88,7 +88,6 @@ class LoginScreenState extends State<LoginScreen> {
           'nickname': firebaseUser.displayName,
           'photoUrl': firebaseUser.photoUrl,
           'id': firebaseUser.uid,
-          'groups': []
         });
 
         // Write data to local

@@ -17,15 +17,12 @@ class GroupCreateScreen extends StatefulWidget {
 }
 
 class GroupCreateScreenState extends State<GroupCreateScreen> {
-  final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
+  final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
 
   bool isLoading = false;
   bool showSelect = false;
   String currentUserId = '';
   List _selecteItems = List();
-
-  String xname = 'Mohammed';
-  String name = 'xxxxxx';
 
   @override
   void initState() {
@@ -34,7 +31,6 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   }
   readLocal()async{
     var prefs = await SharedPreferences.getInstance();
-    ///////
     setState(() {
       currentUserId = prefs.getString('id');
       _selecteItems.add(currentUserId);
@@ -77,7 +73,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Create group',
+          widget.isGroup ? 'Create group' : 'Select one',
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -107,8 +103,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
                     padding: EdgeInsets.all(10.0),
                     itemBuilder: (context, index) {
                       print(snapshot.data.documents[index]['nickname']);
-                      if (snapshot.data.documents[index]['id'] ==
-                          currentUserId) {
+                      if (snapshot.data.documents[index]['id'] == currentUserId) {
                         return SizedBox();
                       }
                       return CheckboxListTile(
@@ -123,8 +118,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
                               if (widget.isGroup == true ||( _selecteItems.length < 2)) {
                                 _selecteItems
                                 .add(snapshot.data.documents[index]['id']);
-                              } 
-                           
+                              }
                             } else {
                               _selecteItems
                                   .remove(snapshot.data.documents[index]['id']);
