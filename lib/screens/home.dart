@@ -133,7 +133,7 @@ class HomeScreenState extends State<HomeScreen> {
       handleSignOut();
     } else if (choice.title == 'New group') {
       Navigator.push(context, MaterialPageRoute(
-          builder: (_) => GroupCreateScreen(isGroup: true,)
+          builder: (_) => GroupCreateScreen()
         ));
     } else {
       Navigator.push(
@@ -279,7 +279,7 @@ class HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'MAIN',
+          'Home',
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -326,9 +326,9 @@ class HomeScreenState extends State<HomeScreen> {
                     );
                   } else {
                     List users = snapshot.data.documents;
-                    var _user = users
-                        .where((item) => item['id'] == currentUserId)
-                        .toList()[0];
+                    // var _user = users
+                    //     .where((item) => item['id'] == currentUserId)
+                    //     .toList()[0];
                     return Column(
                       children: <Widget>[
                         users.length > 0
@@ -442,37 +442,37 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  _buildGroupItem(Map item) {
-    return InkWell(
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => GroupChat(
-                    groupId: item['groupId'],
-                  ))),
-      child: Card(
-        child: Container(
-          padding: EdgeInsets.all(10.0),
-          child: Row(
-            children: <Widget>[
-              ImageAvatar(imgUrl: item['photoUrl']),
-              SizedBox(width: 20.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(item['groupName']),
-                    SizedBox(height: 10.0),
-                    Text(item['recentMessage']['content']),
-                  ],
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // _buildGroupItem(Map item) {
+  //   return InkWell(
+  //     onTap: () => Navigator.push(
+  //         context,
+  //         MaterialPageRoute(
+  //             builder: (context) => GroupChat(
+  //                   groupId: item['groupId'],
+  //                 ))),
+  //     child: Card(
+  //       child: Container(
+  //         padding: EdgeInsets.all(10.0),
+  //         child: Row(
+  //           children: <Widget>[
+  //             ImageAvatar(imgUrl: item['photoUrl']),
+  //             SizedBox(width: 20.0),
+  //             Expanded(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: <Widget>[
+  //                   Text(item['groupName']),
+  //                   SizedBox(height: 10.0),
+  //                   Text(item['recentMessage']['content']),
+  //                 ],
+  //               ),
+  //             )
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 }
 
 class Choice {

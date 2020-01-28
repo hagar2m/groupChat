@@ -9,8 +9,6 @@ import '../utils/colors.dart';
 
 class GroupCreateScreen extends StatefulWidget {
   static String routeName = '/groupchat';
-  final isGroup;
-  GroupCreateScreen({ this.isGroup = false });
 
   @override
   State createState() => GroupCreateScreenState();
@@ -73,7 +71,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.isGroup ? 'Create group' : 'Select one',
+          'Create group',
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -115,7 +113,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
                           print('value: $value');
                           setState(() {
                             if (value == true) {
-                              if (widget.isGroup == true ||( _selecteItems.length < 2)) {
+                              if ( _selecteItems.length < 2) {
                                 _selecteItems
                                 .add(snapshot.data.documents[index]['id']);
                               }
