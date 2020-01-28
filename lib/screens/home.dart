@@ -131,7 +131,9 @@ class HomeScreenState extends State<HomeScreen> {
     if (choice.title == 'Log out') {
       handleSignOut();
     } else if (choice.title == 'New group') {
-      Navigator.pushNamed(context, GroupCreateScreen.routeName);
+      Navigator.push(context, MaterialPageRoute(
+          builder: (_) => GroupCreateScreen(isGroup: true,)
+        ));
     } else {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => Settings()));
@@ -401,8 +403,9 @@ class HomeScreenState extends State<HomeScreen> {
         backgroundColor: themeColor,
         child: Icon(Icons.message),
         onPressed: () {
-          print("object");
-          Navigator.pushNamed(context, GroupCreateScreen.routeName);
+          Navigator.push(context, MaterialPageRoute(
+            builder: (_) => GroupCreateScreen(isGroup: false,)
+          ));
         },
       ),
     );
