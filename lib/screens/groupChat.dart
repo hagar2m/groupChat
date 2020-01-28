@@ -22,7 +22,7 @@ class GroupChat extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '$groupId Group CHAT',
+          '$groupId CHAT',
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
