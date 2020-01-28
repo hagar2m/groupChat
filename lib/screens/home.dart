@@ -22,7 +22,7 @@ import '../widgets/imageAvatar.dart';
 class HomeScreen extends StatefulWidget {
   final String currentUserId;
 
-  HomeScreen({Key key, @required this.currentUserId}) : super(key: key);
+  HomeScreen({ Key key, @required this.currentUserId }) : super(key: key);
 
   @override
   State createState() => HomeScreenState(currentUserId: currentUserId);
