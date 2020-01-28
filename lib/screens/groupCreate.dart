@@ -9,7 +9,8 @@ import '../utils/colors.dart';
 
 class GroupCreateScreen extends StatefulWidget {
   static String routeName = '/groupchat';
-  GroupCreateScreen({Key key}) : super(key: key);
+  final isGroup;
+  GroupCreateScreen({ this.isGroup = false });
 
   @override
   State createState() => GroupCreateScreenState();
@@ -26,8 +27,16 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   @override
   void initState() {
     super.initState();
+    readLocal();
   }
-
+  readLocal()async{
+    var prefs = await SharedPreferences.getInstance();
+    currentUserId = prefs.getString('id');
+    _selecteItems.add(currentUserId);
+    setState(() {
+      
+    });
+  }
   void finishChoosing() async {
     // type: 0 = text, 1 = image, 2 = sticker
     var groupId =
@@ -108,8 +117,11 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
                           print('value: $value');
                           setState(() {
                             if (value == true) {
-                              _selecteItems
-                                  .add(snapshot.data.documents[index]['id']);
+                              if (widget.isGroup == true ||( _selecteItems.length < 2)) {
+                                _selecteItems
+                                .add(snapshot.data.documents[index]['id']);
+                              } 
+                           
                             } else {
                               _selecteItems
                                   .remove(snapshot.data.documents[index]['id']);
