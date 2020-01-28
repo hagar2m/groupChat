@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatdemo/screens/chat.dart';
+import 'package:chatdemo/screens/groupCreate.dart';
+import 'package:chatdemo/widgets/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -41,8 +43,8 @@ class AllUsersState extends State<AllUsers> {
     var threadId =
         item['id'] + DateTime.now().millisecondsSinceEpoch.toString();
 
-    var prefs = await SharedPreferences.getInstance();
-    String name = prefs.getString('nickname') ?? '';
+    // var prefs = await SharedPreferences.getInstance();
+    // String name = prefs.getString('nickname') ?? '';
     Firestore.instance.collection('threads').document(threadId).setData({
       'name': item['nickname'],
       'photoUrl': item['photoUrl'],
@@ -66,10 +68,6 @@ class AllUsersState extends State<AllUsers> {
     //   Firestore.instance.collection('users').document(item).updateData({
     //     'groups': FieldValue.arrayUnion([
     //       {
-    //         'groupId': groupId,
-    //         'groupName': "$name - $currentUserId",
-    //         'photoUrl':
-    //             'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
     //         'adminId': currentUserId,
     //         'members': _selecteItems,
     //         'recentMessage': {
@@ -113,14 +111,19 @@ class AllUsersState extends State<AllUsers> {
                 } else {
                   return ListView.builder(
                     padding: EdgeInsets.all(10.0),
-                    itemCount: snapshot.data.documents.length,
+                    itemCount: snapshot.data.documents.length + 1,
                     itemBuilder: (context, index) {
-                      print(snapshot.data.documents[index]['nickname']);
-                      if (snapshot.data.documents[index]['id'] ==
-                          currentUserId) {
-                        return SizedBox();
+                      print('index: $index');
+
+                      if (index == 0) {
+                        return _buildGroupBtn();
+                      } else {
+                        if (snapshot.data.documents[index - 1]['id'] ==
+                            currentUserId) {
+                          return SizedBox();
+                        }
+                        return buildItem(snapshot.data.documents[index - 1]);
                       }
-                      return buildItem(context, snapshot.data.documents[index]);
                     },
                   );
                 }
@@ -146,58 +149,52 @@ class AllUsersState extends State<AllUsers> {
     );
   }
 
-  Widget buildItem(BuildContext context, DocumentSnapshot document) {
+  Widget buildItem(DocumentSnapshot document) {
     return InkWell(
       onTap: () => finishChoosing(document),
+      child: Row(
+        children: <Widget>[
+          ImageAvatar(imgUrl: document['photoUrl']),
+          Flexible(
+            child: Container(
+              margin: EdgeInsets.only(left: 20.0),
+              child: Text(
+                '${document['nickname']}',
+                style: TextStyle(color: primaryColor),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupBtn() {
+    return FlatButton(
+      padding: EdgeInsets.all(0.0),
       child: Container(
+        margin: EdgeInsets.only(bottom: 20.0),
         child: Row(
           children: <Widget>[
-            Material(
-              child: document['photoUrl'] != null
-                  ? CachedNetworkImage(
-                      placeholder: (context, url) => Container(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 1.0,
-                          valueColor: AlwaysStoppedAnimation<Color>(themeColor),
-                        ),
-                        width: 50.0,
-                        height: 50.0,
-                        padding: EdgeInsets.all(15.0),
-                      ),
-                      imageUrl: document['photoUrl'],
-                      width: 50.0,
-                      height: 50.0,
-                      fit: BoxFit.cover,
-                    )
-                  : Icon(
-                      Icons.account_circle,
-                      size: 50.0,
-                      color: greyColor,
-                    ),
-              borderRadius: BorderRadius.all(Radius.circular(25.0)),
-              clipBehavior: Clip.hardEdge,
-            ),
+            ImageAvatar(
+                imgUrl:
+                    'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png'),
             Flexible(
               child: Container(
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      child: Text(
-                        '${document['nickname']}',
-                        style: TextStyle(color: primaryColor),
-                      ),
-                      alignment: Alignment.centerLeft,
-                      margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
-                    ),
-                  ],
-                ),
                 margin: EdgeInsets.only(left: 20.0),
+                child: Text(
+                  'Create group',
+                  style: TextStyle(color: primaryColor),
+                ),
               ),
             ),
           ],
         ),
-        margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
       ),
+      onPressed: () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => GroupCreateScreen()));
+      },
     );
   }
 }
