@@ -1,3 +1,4 @@
+import 'package:chatdemo/screens/allUsers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import './utils/colors.dart';
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routes: {
         GroupCreateScreen.routeName: (_) => GroupCreateScreen(),
+        AllUsers.routeName: (_) => AllUsers(),
       },
     );
   }
