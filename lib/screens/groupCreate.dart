@@ -31,10 +31,10 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   }
   readLocal()async{
     var prefs = await SharedPreferences.getInstance();
-    currentUserId = prefs.getString('id');
-    _selecteItems.add(currentUserId);
+    ///////
     setState(() {
-      
+      currentUserId = prefs.getString('id');
+      _selecteItems.add(currentUserId);
     });
   }
   void finishChoosing() async {
