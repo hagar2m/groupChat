@@ -398,13 +398,13 @@ class HomeScreenState extends State<HomeScreen> {
         onWillPop: onBackPress,
       ),
       floatingActionButton: FloatingActionButton(
-              backgroundColor: themeColor,
-              child: Icon(Icons.message),
-              onPressed: (){
-                print("object");
-                Navigator.pushNamed(context, GroupCreateScreen.routeName);
-              },
-            ),
+        backgroundColor: themeColor,
+        child: Icon(Icons.message),
+        onPressed: () {
+          print("object");
+          Navigator.pushNamed(context, GroupCreateScreen.routeName);
+        },
+      ),
     );
   }
 
