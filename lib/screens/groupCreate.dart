@@ -23,6 +23,8 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   bool showSelect = false;
   String currentUserId = '';
   List _selecteItems = List();
+
+  String xname = 'Mohammed';
   String name = 'xxxxxx';
 
   @override
