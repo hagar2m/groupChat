@@ -148,7 +148,7 @@ class LoginScreenState extends State<LoginScreen> {
             ? Container(
                 child: Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                   ),
                 ),
                 color: Colors.white.withOpacity(0.8),

@@ -178,7 +178,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                                         strokeWidth: 2.0,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                                themeColor),
+                                                primaryColor),
                                       ),
                                       width: 90.0,
                                       height: 90.0,
@@ -196,7 +196,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                               : Icon(
                                   Icons.account_circle,
                                   size: 90.0,
-                                  color: greyColor,
+                                  color: accentColor,
                                 ))
                           : Material(
                               child: Image.file(
@@ -217,7 +217,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                         onPressed: getImage,
                         padding: EdgeInsets.all(30.0),
                         splashColor: Colors.transparent,
-                        highlightColor: greyColor,
+                        highlightColor: accentColor,
                         iconSize: 30.0,
                       ),
                     ],
@@ -249,7 +249,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                         decoration: InputDecoration(
                           hintText: 'Sweetie',
                           contentPadding: new EdgeInsets.all(5.0),
-                          hintStyle: TextStyle(color: greyColor),
+                          hintStyle: TextStyle(color: textColor),
                         ),
                         controller: controllerNickname,
                         onChanged: (value) {
@@ -280,7 +280,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                         decoration: InputDecoration(
                           hintText: 'Fun, like travel and play PES...',
                           contentPadding: EdgeInsets.all(5.0),
-                          hintStyle: TextStyle(color: greyColor),
+                          hintStyle: TextStyle(color: textColor),
                         ),
                         controller: controllerAboutMe,
                         onChanged: (value) {
@@ -322,7 +322,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               ? Container(
                   child: Center(
                     child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(themeColor)),
+                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor)),
                   ),
                   color: Colors.white.withOpacity(0.8),
                 )

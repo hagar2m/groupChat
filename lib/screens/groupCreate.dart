@@ -1,69 +1,116 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatdemo/screens/groupChat.dart';
+import 'package:chatdemo/widgets/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 import '../utils/colors.dart';
+import '../models/userModel.dart';
 
 class GroupCreateScreen extends StatefulWidget {
-  static String routeName = '/groupchat';
-
+  static String routeName = '/GroupCreateScreen';
   @override
   State createState() => GroupCreateScreenState();
 }
 
 class GroupCreateScreenState extends State<GroupCreateScreen> {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  final TextEditingController textEditingController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool isLoading = false;
-  bool showSelect = false;
   String currentUserId = '';
-  List _selecteItems = List();
+  List<UserModel> _selecteItems = List();
+  UserModel curentUserModel;
 
   @override
   void initState() {
     super.initState();
     readLocal();
   }
-  readLocal()async{
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    super.dispose();
+  }
+
+  readLocal() async {
     var prefs = await SharedPreferences.getInstance();
     setState(() {
       currentUserId = prefs.getString('id');
-      _selecteItems.add(currentUserId);
     });
   }
-  void finishChoosing() async {
-    // type: 0 = text, 1 = image, 2 = sticker
-    var groupId =
+
+  void createGroup() async {
+    //   // type: 0 = text, 1 = image, 2 = sticker
+    _selecteItems.add(curentUserModel);
+
+    var threadId =
         currentUserId + DateTime.now().millisecondsSinceEpoch.toString();
 
-    var prefs = await SharedPreferences.getInstance();
-    String name = prefs.getString('nickname') ?? '';
-    for (var item in _selecteItems) {
-      Firestore.instance.collection('users').document(item).updateData({
-        'groups': FieldValue.arrayUnion([
-          {
-            'groupId': groupId,
-            'groupName': "$name - $currentUserId",
-            'photoUrl':
-                'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
-            'adminId': currentUserId,
-            'members': _selecteItems,
-            'recentMessage': {
-              'idFrom': currentUserId,
-              'content': "$name create this group",
-              'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-              'type': 0,
+    Firestore.instance.collection('threads').document(threadId).setData({
+      'name': textEditingController.text,
+      'photoUrl': groupPhoto,
+      'id': threadId,
+      'users': _selecteItems
+          .map((item) =>
+              Firestore.instance.collection('users').document(item.id))
+          .toList(),
+      'lastMessage': {}
+    });
+    _clearState();
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => GroupChat(groupId: threadId)));
+
+    // List users;
+    // users.contains((DocumentReference u) => u.documentID == "")
+  }
+
+  void _clearState() {
+    _selecteItems.clear();
+    textEditingController.clear();
+  }
+
+  onAlertWithCustomContentPressed(context) {
+    Alert(
+        context: context,
+        closeFunction: () {},
+        title: "Group Name",
+        content: Form(
+          key: _formKey,
+          autovalidate: true,
+          child: TextFormField(
+            controller: textEditingController,
+            decoration: InputDecoration(
+              icon: Icon(Icons.group_work),
+              labelText: 'group name',
+            ),
+            validator: (value) {
+              if (textEditingController.text.trim() == '') {
+                return 'Enter Group name';
+              }
+              return null;
             },
-          }
-        ])
-      });
-    }
-    // subscribe on this group topic to get notification//
-    firebaseMessaging.subscribeToTopic(groupId);
-    Navigator.pop(context);
+          ),
+        ),
+        buttons: [
+          DialogButton(
+            onPressed: () {
+              if (_formKey.currentState.validate()) {
+                Navigator.pop(context);
+                createGroup();
+              }
+            },
+            child: Text(
+              "Create",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          )
+        ]).show();
   }
 
   @override
@@ -71,18 +118,11 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Create group',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          'Create Group',
+          style: TextStyle(color: thirdColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        actions: <Widget>[
-          FlatButton(
-            child: Text('Done'),
-            onPressed: finishChoosing,
-          )
-        ],
       ),
-      
       body: Stack(
         children: <Widget>[
           // List
@@ -93,39 +133,40 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
                 if (!snapshot.hasData) {
                   return Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                     ),
                   );
                 } else {
                   return ListView.builder(
                     padding: EdgeInsets.all(10.0),
+                    itemCount: snapshot.data.documents.length,
                     itemBuilder: (context, index) {
-                      print(snapshot.data.documents[index]['nickname']);
-                      if (snapshot.data.documents[index]['id'] == currentUserId) {
+                      UserModel user = UserModel.fromJson(
+                          snapshot.data.documents[index].data);
+                      if (user.id == currentUserId) {
+                        curentUserModel = user;
                         return SizedBox();
                       }
+
+                      UserModel filteritem = _selecteItems.firstWhere(
+                          (item) => item.id == user.id,
+                          orElse: () => null);
+
                       return CheckboxListTile(
-                        value: _selecteItems
-                            .contains(snapshot.data.documents[index]['id']),
-                        title:
-                            buildItem(context, snapshot.data.documents[index]),
+                        value: filteritem != null,
+                        title: UserItem(user: user, onPressed: null),
                         onChanged: (value) {
-                          print('value: $value');
                           setState(() {
                             if (value == true) {
-                              if ( _selecteItems.length < 2) {
-                                _selecteItems
-                                .add(snapshot.data.documents[index]['id']);
-                              }
+                              _selecteItems.add(user);
                             } else {
                               _selecteItems
-                                  .remove(snapshot.data.documents[index]['id']);
+                                  .removeWhere((item) => item.id == user.id);
                             }
                           });
                         },
                       );
                     },
-                    itemCount: snapshot.data.documents.length,
                   );
                 }
               },
@@ -139,7 +180,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
                     child: Center(
                       child: CircularProgressIndicator(
                           valueColor:
-                              AlwaysStoppedAnimation<Color>(themeColor)),
+                              AlwaysStoppedAnimation<Color>(primaryColor)),
                     ),
                     color: Colors.white.withOpacity(0.8),
                   )
@@ -147,58 +188,11 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
           )
         ],
       ),
-    );
-  }
-
-  Widget buildItem(BuildContext context, DocumentSnapshot document) {
-    return Container(
-      child: Row(
-        children: <Widget>[
-          Material(
-            child: document['photoUrl'] != null
-                ? CachedNetworkImage(
-                    placeholder: (context, url) => Container(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 1.0,
-                        valueColor: AlwaysStoppedAnimation<Color>(themeColor),
-                      ),
-                      width: 50.0,
-                      height: 50.0,
-                      padding: EdgeInsets.all(15.0),
-                    ),
-                    imageUrl: document['photoUrl'],
-                    width: 50.0,
-                    height: 50.0,
-                    fit: BoxFit.cover,
-                  )
-                : Icon(
-                    Icons.account_circle,
-                    size: 50.0,
-                    color: greyColor,
-                  ),
-            borderRadius: BorderRadius.all(Radius.circular(25.0)),
-            clipBehavior: Clip.hardEdge,
-          ),
-          Flexible(
-            child: Container(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    child: Text(
-                      '${document['nickname']}',
-                      style: TextStyle(color: primaryColor),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
-                  ),
-                ],
-              ),
-              margin: EdgeInsets.only(left: 20.0),
-            ),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.arrow_forward),
+        onPressed: () => onAlertWithCustomContentPressed(context),
+        backgroundColor: accentColor,
       ),
-      margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
     );
   }
 }

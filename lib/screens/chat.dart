@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
+import 'package:chatdemo/models/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,10 +16,10 @@ import '../utils/colors.dart';
 import '../widgets/widgets.dart';
 
 class Chat extends StatelessWidget {
-  final String peerId;
-  final String peerAvatar;
+  final String threadId;
+  final UserModel user;
 
-  Chat({Key key, @required this.peerId, @required this.peerAvatar})
+  Chat({Key key, @required this.threadId, @required this.user})
       : super(key: key);
 
   @override
@@ -25,40 +27,40 @@ class Chat extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'CHAT',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          user.nickname,
+          style: TextStyle(color: thirdColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: ChatScreen(
-        peerId: peerId,
-        peerAvatar: peerAvatar,
+        threadId: threadId,
+        selectedUser: user,
       ),
     );
   }
 }
 
 class ChatScreen extends StatefulWidget {
-  final String peerId;
-  final String peerAvatar;
+  final String threadId;
+  final UserModel selectedUser;
 
-  ChatScreen({Key key, @required this.peerId, @required this.peerAvatar})
+  ChatScreen({Key key, @required this.threadId, @required this.selectedUser})
       : super(key: key);
 
   @override
   State createState() =>
-      ChatScreenState(peerId: peerId, peerAvatar: peerAvatar);
+      ChatScreenState();
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  ChatScreenState({Key key, @required this.peerId, @required this.peerAvatar});
+  // ChatScreenState({Key key, @required this.threadId, @required this.peerAvatar});
 
-  String peerId;
+  String threadId;
   String peerAvatar;
-  String id;
+  String currentUserId;
+  String currentUserName;
 
   var listMessage;
-  String groupChatId;
   SharedPreferences prefs;
 
   File imageFile;
@@ -75,13 +77,17 @@ class ChatScreenState extends State<ChatScreen> {
     super.initState();
     focusNode.addListener(onFocusChange);
 
-    groupChatId = '';
-
     isLoading = false;
     isShowSticker = false;
     imageUrl = '';
 
     readLocal();
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    super.dispose();
   }
 
   void onFocusChange() {
@@ -95,19 +101,20 @@ class ChatScreenState extends State<ChatScreen> {
 
   readLocal() async {
     prefs = await SharedPreferences.getInstance();
-    id = prefs.getString('id') ?? '';
-    print('my id: $id');
-    print("----------------------------");
-    if (id.hashCode <= peerId.hashCode) {
-      groupChatId = '$id-$peerId';
-    } else {
-      groupChatId = '$peerId-$id';
-    }
+    currentUserId = prefs.getString('id') ?? '';
+    currentUserName = prefs.getString('nickname') ?? '';
+    // print('my id: $id');
+    // print("----------------------------");
+    // if (id.hashCode <= threadId.hashCode) {
+    //   groupChatId = '$id-$threadId';
+    // } else {
+    //   groupChatId = '$threadId-$id';
+    // }
 
     Firestore.instance
         .collection('users')
-        .document(id)
-        .updateData({'chattingWith': peerId});
+        .document(currentUserId)
+        .updateData({'chattingWith': threadId});
 
     setState(() {});
   }
@@ -152,30 +159,40 @@ class ChatScreenState extends State<ChatScreen> {
 
   void onSendMessage(String content, int type) {
     // type: 0 = text, 1 = image, 2 = sticker
+    String timeStamp =  DateTime.now().millisecondsSinceEpoch.toString();
     if (content.trim() != '') {
       textEditingController.clear();
 
       var documentReference = Firestore.instance
           .collection('messages')
-          .document(groupChatId)
-          .collection(groupChatId)
-          .document(DateTime.now().millisecondsSinceEpoch.toString());
+          .document(widget.threadId)
+          .collection(widget.threadId)
+          .document(timeStamp);
 
       Firestore.instance.runTransaction((transaction) async {
         await transaction.set(
           documentReference,
           {
-            'idFrom': id,
-            'idTo': peerId,
-            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+            'threadId': widget.threadId,
+            'idFrom': currentUserId,
+            'idTo': widget.selectedUser.id,
+            'timestamp': timeStamp,
             'content': content,
             'type': type,
+            'nameFrom': currentUserName
             // 'data': {
             //   'name': 'hagar mekky1'
             // }
           },
         );
       });
+      ///update thread collection
+      Firestore.instance
+        .collection('threads')
+        .document(widget.threadId)
+        .updateData({
+          'lastMessage': Firestore.instance.collection('messages').document(widget.threadId).collection(widget.threadId).document(timeStamp)
+          });
       listScrollController.animateTo(0.0,
           duration: Duration(milliseconds: 300), curve: Curves.easeOut);
     } else {
@@ -185,7 +202,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget buildItem(int index, DocumentSnapshot document) {
     print("index: $index - msg id: ${document['idFrom']}");
-    if (document['idFrom'] == id) {
+    if (document['idFrom'] == currentUserId) {
       // Right (my message)
       return Row(
         children: <Widget>[
@@ -199,7 +216,7 @@ class ChatScreenState extends State<ChatScreen> {
                   padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
                   width: 200.0,
                   decoration: BoxDecoration(
-                      color: greyColor2,
+                      color: textColor,
                       borderRadius: BorderRadius.circular(8.0)),
                   margin: EdgeInsets.only(
                       bottom: isLastMessageRight(index) ? 20.0 : 10.0,
@@ -214,13 +231,13 @@ class ChatScreenState extends State<ChatScreen> {
                             placeholder: (context, url) => Container(
                               child: CircularProgressIndicator(
                                 valueColor:
-                                    AlwaysStoppedAnimation<Color>(themeColor),
+                                    AlwaysStoppedAnimation<Color>(primaryColor),
                               ),
                               width: 200.0,
                               height: 200.0,
                               padding: EdgeInsets.all(70.0),
                               decoration: BoxDecoration(
-                                color: greyColor2,
+                                color: textColor,
                                 borderRadius: BorderRadius.all(
                                   Radius.circular(8.0),
                                 ),
@@ -288,7 +305,7 @@ class ChatScreenState extends State<ChatScreen> {
                             child: CircularProgressIndicator(
                               strokeWidth: 1.0,
                               valueColor:
-                                  AlwaysStoppedAnimation<Color>(themeColor),
+                                  AlwaysStoppedAnimation<Color>(primaryColor),
                             ),
                             width: 35.0,
                             height: 35.0,
@@ -328,13 +345,13 @@ class ChatScreenState extends State<ChatScreen> {
                                   placeholder: (context, url) => Container(
                                     child: CircularProgressIndicator(
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                          themeColor),
+                                          primaryColor),
                                     ),
                                     width: 200.0,
                                     height: 200.0,
                                     padding: EdgeInsets.all(70.0),
                                     decoration: BoxDecoration(
-                                      color: greyColor2,
+                                      color: textColor,
                                       borderRadius: BorderRadius.all(
                                         Radius.circular(8.0),
                                       ),
@@ -394,7 +411,7 @@ class ChatScreenState extends State<ChatScreen> {
                           DateTime.fromMillisecondsSinceEpoch(
                               int.parse(document['timestamp']))),
                       style: TextStyle(
-                          color: greyColor,
+                          color: textColor,
                           fontSize: 12.0,
                           fontStyle: FontStyle.italic),
                     ),
@@ -412,7 +429,7 @@ class ChatScreenState extends State<ChatScreen> {
   bool isLastMessageLeft(int index) {
     if ((index > 0 &&
             listMessage != null &&
-            listMessage[index - 1]['idFrom'] == id) ||
+            listMessage[index - 1]['idFrom'] == currentUserId) ||
         index == 0) {
       return true;
     } else {
@@ -423,7 +440,7 @@ class ChatScreenState extends State<ChatScreen> {
   bool isLastMessageRight(int index) {
     if ((index > 0 &&
             listMessage != null &&
-            listMessage[index - 1]['idFrom'] != id) ||
+            listMessage[index - 1]['idFrom'] != currentUserId) ||
         index == 0) {
       return true;
     } else {
@@ -439,7 +456,7 @@ class ChatScreenState extends State<ChatScreen> {
     } else {
       Firestore.instance
           .collection('users')
-          .document(id)
+          .document(currentUserId)
           .updateData({'chattingWith': null});
       Navigator.pop(context);
     }
@@ -505,8 +522,7 @@ class ChatScreenState extends State<ChatScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       ),
       decoration: new BoxDecoration(
-          border:
-              new Border(top: new BorderSide(color: greyColor2, width: 0.5)),
+          border: new Border(top: new BorderSide(color: textColor, width: 0.5)),
           color: Colors.white),
       padding: EdgeInsets.all(5.0),
       height: 180.0,
@@ -519,7 +535,7 @@ class ChatScreenState extends State<ChatScreen> {
           ? Container(
               child: Center(
                 child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(themeColor)),
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor)),
               ),
               color: Colors.white.withOpacity(0.8),
             )
@@ -563,7 +579,7 @@ class ChatScreenState extends State<ChatScreen> {
                 controller: textEditingController,
                 decoration: InputDecoration.collapsed(
                   hintText: 'Type your message...',
-                  hintStyle: TextStyle(color: greyColor),
+                  hintStyle: TextStyle(color: textColor),
                 ),
                 focusNode: focusNode,
               ),
@@ -587,23 +603,22 @@ class ChatScreenState extends State<ChatScreen> {
       width: double.infinity,
       height: 50.0,
       decoration: new BoxDecoration(
-          border:
-              new Border(top: new BorderSide(color: greyColor2, width: 0.5)),
+          border: new Border(top: new BorderSide(color: textColor, width: 0.5)),
           color: Colors.white),
     );
   }
 
   Widget buildListMessage() {
     return Flexible(
-      child: groupChatId == ''
+      child: widget.threadId == ''
           ? Center(
               child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(themeColor)))
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor)))
           : StreamBuilder(
               stream: Firestore.instance
                   .collection('messages')
-                  .document(groupChatId)
-                  .collection(groupChatId)
+                  .document(widget.threadId)
+                  .collection(widget.threadId)
                   .orderBy('timestamp', descending: true)
                   .limit(20)
                   .snapshots(),
@@ -611,8 +626,8 @@ class ChatScreenState extends State<ChatScreen> {
                 if (!snapshot.hasData) {
                   return Center(
                       child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(themeColor)));
+                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor)
+                    ));
                 } else {
                   listMessage = snapshot.data.documents;
                   return ListView.builder(
