@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatdemo/screens/chat.dart';
 import 'package:chatdemo/screens/groupCreate.dart';
 import 'package:chatdemo/widgets/widgets.dart';
@@ -9,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/colors.dart';
+import '../models/userModel.dart';
 
 class AllUsers extends StatefulWidget {
   static String routeName = '/allusers';
@@ -20,9 +20,7 @@ class AllUsersState extends State<AllUsers> {
   final FirebaseMessaging firebaseMessaging = FirebaseMessaging();
 
   bool isLoading = false;
-  bool showSelect = false;
   String currentUserId = '';
-  // List _selecteItems = List();
 
   @override
   void initState() {
@@ -34,24 +32,21 @@ class AllUsersState extends State<AllUsers> {
     var prefs = await SharedPreferences.getInstance();
     setState(() {
       currentUserId = prefs.getString('id');
-      // _selecteItems.add(currentUserId);
     });
   }
 
-  void finishChoosing(DocumentSnapshot item) async {
+  void finishChoosing(UserModel selectedUser) async {
     //   // type: 0 = text, 1 = image, 2 = sticker
     var threadId =
-        item['id'] + DateTime.now().millisecondsSinceEpoch.toString();
+        currentUserId + DateTime.now().millisecondsSinceEpoch.toString();
 
-    // var prefs = await SharedPreferences.getInstance();
-    // String name = prefs.getString('nickname') ?? '';
     Firestore.instance.collection('threads').document(threadId).setData({
-      'name': item['nickname'],
-      'photoUrl': item['photoUrl'],
+      'name': selectedUser.nickname,
+      'photoUrl': selectedUser.photoUrl,
       'id': threadId,
       'users': [
         Firestore.instance.collection('users').document(currentUserId),
-        Firestore.instance.collection('users').document(item['id'])
+        Firestore.instance.collection('users').document(selectedUser.id)
       ],
       'lastMessage': {}
     });
@@ -60,29 +55,10 @@ class AllUsersState extends State<AllUsers> {
         context,
         MaterialPageRoute(
             builder: (context) =>
-                Chat(peerId: threadId, peerAvatar: item['photoUrl'])));
+                Chat(threadId: threadId, user: selectedUser)));
 
     // List users;
     // users.contains((DocumentReference u) => u.documentID == "")
-
-    //   Firestore.instance.collection('users').document(item).updateData({
-    //     'groups': FieldValue.arrayUnion([
-    //       {
-    //         'adminId': currentUserId,
-    //         'members': _selecteItems,
-    //         'recentMessage': {
-    //           'idFrom': currentUserId,
-    //           'content': "$name create this group",
-    //           'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
-    //           'type': 0,
-    //         },
-    //       }
-    //     ])
-    //   });
-
-    // subscribe on this group topic to get notification//
-    // firebaseMessaging.subscribeToTopic(groupId);
-    // Navigator.pop(context);
   }
 
   @override
@@ -91,7 +67,7 @@ class AllUsersState extends State<AllUsers> {
       appBar: AppBar(
         title: Text(
           'Select one',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          style: TextStyle(color: thirdColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -105,7 +81,7 @@ class AllUsersState extends State<AllUsers> {
                 if (!snapshot.hasData) {
                   return Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                     ),
                   );
                 } else {
@@ -113,16 +89,28 @@ class AllUsersState extends State<AllUsers> {
                     padding: EdgeInsets.all(10.0),
                     itemCount: snapshot.data.documents.length + 1,
                     itemBuilder: (context, index) {
-                      print('index: $index');
-
                       if (index == 0) {
-                        return _buildGroupBtn();
+                        UserModel fakeuserModel = UserModel(
+                          nickname: 'Create Group',
+                          photoUrl:
+                              'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
+                        );
+                        return UserItem(
+                            user: fakeuserModel,
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => GroupCreateScreen()));
+                            });
                       } else {
-                        if (snapshot.data.documents[index - 1]['id'] ==
-                            currentUserId) {
+                        UserModel user = UserModel.fromJson(
+                            snapshot.data.documents[index - 1].data);
+                        if (user.id == currentUserId) {
                           return SizedBox();
                         }
-                        return buildItem(snapshot.data.documents[index - 1]);
+                        return UserItem(
+                            user: user, onPressed: () => finishChoosing(user));
                       }
                     },
                   );
@@ -138,7 +126,7 @@ class AllUsersState extends State<AllUsers> {
                     child: Center(
                       child: CircularProgressIndicator(
                           valueColor:
-                              AlwaysStoppedAnimation<Color>(themeColor)),
+                              AlwaysStoppedAnimation<Color>(primaryColor)),
                     ),
                     color: Colors.white.withOpacity(0.8),
                   )
@@ -146,55 +134,6 @@ class AllUsersState extends State<AllUsers> {
           )
         ],
       ),
-    );
-  }
-
-  Widget buildItem(DocumentSnapshot document) {
-    return InkWell(
-      onTap: () => finishChoosing(document),
-      child: Row(
-        children: <Widget>[
-          ImageAvatar(imgUrl: document['photoUrl']),
-          Flexible(
-            child: Container(
-              margin: EdgeInsets.only(left: 20.0),
-              child: Text(
-                '${document['nickname']}',
-                style: TextStyle(color: primaryColor),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGroupBtn() {
-    return FlatButton(
-      padding: EdgeInsets.all(0.0),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 20.0),
-        child: Row(
-          children: <Widget>[
-            ImageAvatar(
-                imgUrl:
-                    'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png'),
-            Flexible(
-              child: Container(
-                margin: EdgeInsets.only(left: 20.0),
-                child: Text(
-                  'Create group',
-                  style: TextStyle(color: primaryColor),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      onPressed: () {
-        Navigator.push(
-            context, MaterialPageRoute(builder: (_) => GroupCreateScreen()));
-      },
     );
   }
 }

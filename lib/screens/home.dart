@@ -7,8 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import './chat.dart';
-import './groupChat.dart';
 import '../utils/colors.dart';
 
 import './login.dart';
@@ -23,7 +21,7 @@ import '../widgets/imageAvatar.dart';
 class HomeScreen extends StatefulWidget {
   final String currentUserId;
 
-  HomeScreen({ Key key, @required this.currentUserId }) : super(key: key);
+  HomeScreen({Key key, @required this.currentUserId}) : super(key: key);
 
   @override
   State createState() => HomeScreenState(currentUserId: currentUserId);
@@ -132,9 +130,8 @@ class HomeScreenState extends State<HomeScreen> {
     if (choice.title == 'Log out') {
       handleSignOut();
     } else if (choice.title == 'New group') {
-      Navigator.push(context, MaterialPageRoute(
-          builder: (_) => GroupCreateScreen()
-        ));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => GroupCreateScreen()));
     } else {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => Settings()));
@@ -175,7 +172,7 @@ class HomeScreenState extends State<HomeScreen> {
                 EdgeInsets.only(left: 0.0, right: 0.0, top: 0.0, bottom: 0.0),
             children: <Widget>[
               Container(
-                color: themeColor,
+                color: primaryColor,
                 margin: EdgeInsets.all(0.0),
                 padding: EdgeInsets.only(bottom: 10.0, top: 10.0),
                 height: 100.0,
@@ -219,7 +216,7 @@ class HomeScreenState extends State<HomeScreen> {
                     Text(
                       'CANCEL',
                       style: TextStyle(
-                          color: primaryColor, fontWeight: FontWeight.bold),
+                          color: textColor, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
@@ -280,7 +277,7 @@ class HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(
           'Home',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          style: TextStyle(color: thirdColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: <Widget>[
@@ -301,7 +298,7 @@ class HomeScreenState extends State<HomeScreen> {
                         ),
                         Text(
                           choice.title,
-                          style: TextStyle(color: primaryColor),
+                          style: TextStyle(color: textColor),
                         ),
                       ],
                     ));
@@ -316,46 +313,40 @@ class HomeScreenState extends State<HomeScreen> {
             // List
             Container(
               child: StreamBuilder(
-                stream: Firestore.instance.collection('users').snapshots(),
+                stream: Firestore.instance.collection('threads').snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
                     return Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                       ),
                     );
                   } else {
-                    List users = snapshot.data.documents;
-                    // var _user = users
-                    //     .where((item) => item['id'] == currentUserId)
-                    //     .toList()[0];
-                    return Column(
-                      children: <Widget>[
-                        users.length > 0
-                            ? Container(
-                                alignment: Alignment.topLeft,
-                                padding: EdgeInsets.all(10.0),
-                                child: Text(
-                                  'Users:',
-                                  textAlign: TextAlign.left,
-                                ),
-                              )
-                            : SizedBox(),
-                        Flexible(
-                            child: ListView.builder(
-                          padding: EdgeInsets.all(10.0),
-                          itemBuilder: (context, index) {
-                            if (snapshot.data.documents[index]['id'] !=
-                                currentUserId) {
-                              return buildItem(
-                                  context, snapshot.data.documents[index]);
-                            }
-                            return SizedBox();
-                          },
-                          itemCount: snapshot.data.documents.length,
-                        )),
+                    List threads = snapshot.data.documents;
+                    return ListView.builder(
+                      padding: EdgeInsets.all(10.0),
+                      itemBuilder: (context, index) {
+                        List<DocumentReference> usersRef = threads[index].data['users'];
+
+                        DocumentReference exists = usersRef.firstWhere((u) => u.documentID == "", orElse: null);
+                 
+
+                        // DocumentReference lastMsgRef = threads[index].data['lastMessage'];
+                        // usersRef.map((item) {
+                        //   item.get().then((v) {
+                        //     print('content ${v.data['id']}');
+
+                        //   });
+                        // }).toList();
                        
-                      ],
+                        if (threads[index]['id'] != currentUserId) {
+                              
+                          //   return buildItem(
+                          //       context, threads[index]);
+                        }
+                        return SizedBox();
+                      },
+                      itemCount: threads.length,
                     );
                   }
                 },
@@ -369,7 +360,7 @@ class HomeScreenState extends State<HomeScreen> {
                       child: Center(
                         child: CircularProgressIndicator(
                             valueColor:
-                                AlwaysStoppedAnimation<Color>(themeColor)),
+                                AlwaysStoppedAnimation<Color>(primaryColor)),
                       ),
                       color: Colors.white.withOpacity(0.8),
                     )
@@ -380,16 +371,16 @@ class HomeScreenState extends State<HomeScreen> {
         onWillPop: onBackPress,
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: themeColor,
+        backgroundColor: accentColor,
         child: Icon(Icons.message),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(
-            builder: (_) => AllUsers()
-          ));
+          Navigator.push(
+              context, MaterialPageRoute(builder: (_) => AllUsers()));
         },
       ),
     );
   }
+
 //put
   Widget buildItem(BuildContext context, DocumentSnapshot document) {
     return Container(
@@ -404,7 +395,7 @@ class HomeScreenState extends State<HomeScreen> {
                     Container(
                       child: Text(
                         'Nickname: ${document['nickname']}',
-                        style: TextStyle(color: primaryColor),
+                        style: TextStyle(color: textColor),
                       ),
                       alignment: Alignment.centerLeft,
                       margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
@@ -412,7 +403,7 @@ class HomeScreenState extends State<HomeScreen> {
                     Container(
                       child: Text(
                         'About me: ${document['aboutMe'] ?? 'Not available'}',
-                        style: TextStyle(color: primaryColor),
+                        style: TextStyle(color: textColor),
                       ),
                       alignment: Alignment.centerLeft,
                       margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
@@ -425,15 +416,15 @@ class HomeScreenState extends State<HomeScreen> {
           ],
         ),
         onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => Chat(
-                        peerId: document.documentID,
-                        peerAvatar: document['photoUrl'],
-                      )));
+          // Navigator.push(
+          //     context,
+          //     MaterialPageRoute(
+          //         builder: (context) => Chat(
+          //               threadId: document.documentID,
+          //               us: document['photoUrl'],
+          //             )));
         },
-        color: greyColor2,
+        color: thirdColor,
         padding: EdgeInsets.fromLTRB(25.0, 10.0, 25.0, 10.0),
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
