@@ -53,8 +53,8 @@ class AllUsersState extends State<AllUsers> {
         Firestore.instance.collection('users').document(currentUserId),
         Firestore.instance.collection('users').document(selectedUser.id)
       ],
-      'lastMessage': '',
-      'lastMessageTime': DateTime.now().millisecondsSinceEpoch.toString()
+      // 'lastMessage': '',
+      // 'lastMessageTime': DateTime.now().millisecondsSinceEpoch.toString()
     });
 
     Navigator.push(
