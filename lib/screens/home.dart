@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:chatdemo/screens/allUsers.dart';
+import 'package:chatdemo/services/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -28,7 +29,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  HomeScreenState({ Key key, @required this.currentUserId });
+  HomeScreenState({Key key, @required this.currentUserId});
 
   final String currentUserId;
 
@@ -43,14 +44,25 @@ class HomeScreenState extends State<HomeScreen> {
     const Choice(title: 'Log out', icon: Icons.exit_to_app),
     const Choice(title: 'New group', icon: Icons.group_add),
   ];
-  
-  List groups = [];
+
+  List _myThreads = [];
 
   @override
   void initState() {
     super.initState();
     registerNotification();
     configLocalNotification();
+    getThreads();
+  }
+
+  getThreads() async {
+    setState(() {
+      isLoading = true;
+    });
+    _myThreads = await ApiServices.getThreads(currentUserId);
+    setState(() {
+      isLoading = false;
+    });
   }
 
   void registerNotification() {
@@ -312,48 +324,13 @@ class HomeScreenState extends State<HomeScreen> {
         child: Stack(
           children: <Widget>[
             // List
-            Container(
-              child: StreamBuilder(
-                stream: Firestore.instance.collection('threads').snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                      ),
-                    );
-                  } else {
-                    List threads = snapshot.data.documents;
-                    return ListView.builder(
-                      padding: EdgeInsets.all(10.0),
-                      itemBuilder: (context, index) {
-                        List<dynamic> usersRef = threads[index].data['users'];
-                        DocumentReference exists = usersRef.firstWhere((u) => u.documentID == currentUserId, orElse: null);
-
-                        if (exists != null) {
-                          return buildItem(threads[index].data);
-                        } 
-
-                        // DocumentReference lastMsgRef = threads[index].data['lastMessage'];
-                        // usersRef.map((item) {
-                        //   item.get().then((v) {
-                        //     print('content ${v.data['id']}');
-
-                        //   });
-                        // }).toList();
-                       
-                        // if (threads[index]['id'] != currentUserId) {
-                          // return buildItem(threads[index].data);
-                        // }
-                        return SizedBox();
-                      },
-                      itemCount: threads.length,
-                    );
-                  }
-                },
-              ),
+            ListView.builder(
+              itemCount: _myThreads.length,
+              padding: EdgeInsets.all(8.0),
+              itemBuilder: (context, index) {
+                return buildItem(_myThreads[index].data);
+              },
             ),
-
             // Loading
             Positioned(
               child: isLoading
@@ -365,7 +342,7 @@ class HomeScreenState extends State<HomeScreen> {
                       ),
                       color: Colors.white.withOpacity(0.8),
                     )
-                  : Container(),
+                  : SizedBox(),
             )
           ],
         ),
@@ -384,8 +361,8 @@ class HomeScreenState extends State<HomeScreen> {
 
 //put
   Widget buildItem(var document) {
-    print('document: $document');
     return Container(
+      margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
       child: FlatButton(
         child: Row(
           children: <Widget>[
@@ -431,46 +408,12 @@ class HomeScreenState extends State<HomeScreen> {
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       ),
-      margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
     );
   }
-
-  // _buildGroupItem(Map item) {
-  //   return InkWell(
-  //     onTap: () => Navigator.push(
-  //         context,
-  //         MaterialPageRoute(
-  //             builder: (context) => GroupChat(
-  //                   groupId: item['groupId'],
-  //                 ))),
-  //     child: Card(
-  //       child: Container(
-  //         padding: EdgeInsets.all(10.0),
-  //         child: Row(
-  //           children: <Widget>[
-  //             ImageAvatar(imgUrl: item['photoUrl']),
-  //             SizedBox(width: 20.0),
-  //             Expanded(
-  //               child: Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: <Widget>[
-  //                   Text(item['groupName']),
-  //                   SizedBox(height: 10.0),
-  //                   Text(item['recentMessage']['content']),
-  //                 ],
-  //               ),
-  //             )
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 }
 
 class Choice {
   const Choice({this.title, this.icon});
-
   final String title;
   final IconData icon;
 }

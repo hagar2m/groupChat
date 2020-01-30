@@ -37,8 +37,7 @@ class AllUsersState extends State<AllUsers> {
 
   void finishChoosing(UserModel selectedUser) async {
     //   // type: 0 = text, 1 = image, 2 = sticker
-    var threadId =
-        currentUserId + DateTime.now().millisecondsSinceEpoch.toString();
+    var threadId = currentUserId;
 
     Firestore.instance.collection('threads').document(threadId).setData({
       'name': selectedUser.nickname,
