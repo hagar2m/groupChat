@@ -326,10 +326,12 @@ class HomeScreenState extends State<HomeScreen> {
                     return ListView.builder(
                       padding: EdgeInsets.all(10.0),
                       itemBuilder: (context, index) {
-                        List<DocumentReference> usersRef = threads[index].data['users'];
+                        List<dynamic> usersRef = threads[index].data['users'];
+                        DocumentReference exists = usersRef.firstWhere((u) => u.documentID == currentUserId, orElse: null);
 
-                        DocumentReference exists = usersRef.firstWhere((u) => u.documentID == "", orElse: null);
-                 
+                        if (exists != null) {
+                          return buildItem(threads[index].data);
+                        } 
 
                         // DocumentReference lastMsgRef = threads[index].data['lastMessage'];
                         // usersRef.map((item) {
@@ -339,11 +341,9 @@ class HomeScreenState extends State<HomeScreen> {
                         //   });
                         // }).toList();
                        
-                        if (threads[index]['id'] != currentUserId) {
-                              
-                          //   return buildItem(
-                          //       context, threads[index]);
-                        }
+                        // if (threads[index]['id'] != currentUserId) {
+                          // return buildItem(threads[index].data);
+                        // }
                         return SizedBox();
                       },
                       itemCount: threads.length,
@@ -382,7 +382,8 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
 //put
-  Widget buildItem(BuildContext context, DocumentSnapshot document) {
+  Widget buildItem(var document) {
+    print('document: $document');
     return Container(
       child: FlatButton(
         child: Row(
@@ -394,20 +395,20 @@ class HomeScreenState extends State<HomeScreen> {
                   children: <Widget>[
                     Container(
                       child: Text(
-                        'Nickname: ${document['nickname']}',
+                        '${document['name']}',
                         style: TextStyle(color: textColor),
                       ),
                       alignment: Alignment.centerLeft,
                       margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
                     ),
-                    Container(
-                      child: Text(
-                        'About me: ${document['aboutMe'] ?? 'Not available'}',
-                        style: TextStyle(color: textColor),
-                      ),
-                      alignment: Alignment.centerLeft,
-                      margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
-                    )
+                    // Container(
+                    //   child: Text(
+                    //     'About me: ${document['aboutMe'] ?? 'Not available'}',
+                    //     style: TextStyle(color: textColor),
+                    //   ),
+                    //   alignment: Alignment.centerLeft,
+                    //   margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
+                    // )
                   ],
                 ),
                 margin: EdgeInsets.only(left: 20.0),
