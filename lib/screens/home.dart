@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'package:chatdemo/models/thread.dart';
 import 'package:chatdemo/screens/allUsers.dart';
 import 'package:chatdemo/services/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -328,7 +329,7 @@ class HomeScreenState extends State<HomeScreen> {
               itemCount: _myThreads.length,
               padding: EdgeInsets.all(8.0),
               itemBuilder: (context, index) {
-                return buildItem(_myThreads[index].data);
+                return buildItem(_myThreads[index]);
               },
             ),
             // Loading
@@ -360,20 +361,20 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
 //put
-  Widget buildItem(var document) {
+  Widget buildItem(ThreadModel thread) {
     return Container(
       margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
       child: FlatButton(
         child: Row(
           children: <Widget>[
-            ImageAvatar(imgUrl: document['photoUrl']),
+            ImageAvatar(imgUrl: thread.photoUrl),
             Flexible(
               child: Container(
                 child: Column(
                   children: <Widget>[
                     Container(
                       child: Text(
-                        '${document['name']}',
+                        '${thread.name}',
                         style: TextStyle(color: textColor),
                       ),
                       alignment: Alignment.centerLeft,
