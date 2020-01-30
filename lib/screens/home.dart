@@ -28,7 +28,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  HomeScreenState({Key key, @required this.currentUserId});
+  HomeScreenState({ Key key, @required this.currentUserId });
 
   final String currentUserId;
 
@@ -43,6 +43,7 @@ class HomeScreenState extends State<HomeScreen> {
     const Choice(title: 'Log out', icon: Icons.exit_to_app),
     const Choice(title: 'New group', icon: Icons.group_add),
   ];
+  
   List groups = [];
 
   @override
