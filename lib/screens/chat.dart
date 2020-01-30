@@ -56,7 +56,6 @@ class ChatScreenState extends State<ChatScreen> {
   // ChatScreenState({Key key, @required this.threadId, @required this.peerAvatar});
 
   String threadId;
-  String peerAvatar;
   String currentUserId;
   String currentUserName;
 
@@ -191,7 +190,9 @@ class ChatScreenState extends State<ChatScreen> {
         .collection('threads')
         .document(widget.threadId)
         .updateData({
-          'lastMessage': Firestore.instance.collection('messages').document(widget.threadId).collection(widget.threadId).document(timeStamp)
+          'lastMessage': content,
+          'lastMessageTime': timeStamp
+          //Firestore.instance.collection('messages').document(widget.threadId).collection(widget.threadId).document(timeStamp)
           });
       listScrollController.animateTo(0.0,
           duration: Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -201,7 +202,6 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   Widget buildItem(int index, DocumentSnapshot document) {
-    print("index: $index - msg id: ${document['idFrom']}");
     if (document['idFrom'] == currentUserId) {
       // Right (my message)
       return Row(
@@ -311,7 +311,7 @@ class ChatScreenState extends State<ChatScreen> {
                             height: 35.0,
                             padding: EdgeInsets.all(10.0),
                           ),
-                          imageUrl: peerAvatar,
+                          imageUrl: widget.selectedUser.photoUrl,
                           width: 35.0,
                           height: 35.0,
                           fit: BoxFit.cover,
@@ -327,7 +327,7 @@ class ChatScreenState extends State<ChatScreen> {
                 document['type'] == 0
                     ? Container(
                         child: Text(
-                          "$index ${document['content']}",
+                          "${document['content']}",
                           style: TextStyle(color: Colors.white),
                         ),
                         padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),

@@ -37,7 +37,13 @@ class AllUsersState extends State<AllUsers> {
 
   void finishChoosing(UserModel selectedUser) async {
     //   // type: 0 = text, 1 = image, 2 = sticker
-    var threadId = currentUserId;
+    var threadId;
+
+     if (currentUserId.hashCode <= selectedUser.id.hashCode) {
+      threadId = '$currentUserId-${selectedUser.id}';
+    } else {
+      threadId = '${selectedUser.id}-$currentUserId';
+    }
 
     Firestore.instance.collection('threads').document(threadId).setData({
       'name': selectedUser.nickname,
@@ -47,7 +53,8 @@ class AllUsersState extends State<AllUsers> {
         Firestore.instance.collection('users').document(currentUserId),
         Firestore.instance.collection('users').document(selectedUser.id)
       ],
-      'lastMessage': {}
+      'lastMessage': '',
+      'lastMessageTime': DateTime.now().millisecondsSinceEpoch.toString()
     });
 
     Navigator.push(
