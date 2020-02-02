@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:chatdemo/models/userModel.dart';
 
 class ThreadModel {
@@ -40,7 +39,7 @@ class ThreadModel {
         name: json["name"] == null ? null : json["name"],
         id: json["id"] == null ? null : json["id"],
         photoUrl: json["photoUrl"] == null ? null : json["photoUrl"],
-        lastMessage: json["lastMessage"] == null ? null : json["lastMessage"],
+        lastMessage: json["lastMessage"] == null ? '' : json["lastMessage"],
         lastMessageTime: json["lastMessageTime"] == null ? null : json["lastMessageTime"],
         // users: json["users"] == null ? null : List<UserModel>.from(json["users"].map((x) => UserModel.fromJson(x))),
     );
@@ -53,4 +52,10 @@ class ThreadModel {
         "lastMessageTime": lastMessageTime == null ? null : lastMessageTime,
         // "users": users == null ? null : List<dynamic>.from(users.map((x) => x.toJson())),
     };
+
+    @override
+  String toString() {
+    print('name: $name - id: $id - photo: $photoUrl - lastMsg: $lastMessage');
+    return super.toString();
+  }
 }

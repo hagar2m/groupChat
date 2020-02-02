@@ -60,14 +60,11 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
           .map((item) =>
               Firestore.instance.collection('users').document(item.id))
           .toList(),
-      'lastMessage': {}
+      'lastMessage': ''
     });
     _clearState();
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => GroupChat(groupId: threadId)));
-
-    // List users;
-    // users.contains((DocumentReference u) => u.documentID == "")
   }
 
   void _clearState() {

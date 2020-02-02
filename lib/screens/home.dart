@@ -3,8 +3,9 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:after_layout/after_layout.dart';
 import 'package:chatdemo/models/thread.dart';
+import 'package:chatdemo/models/userModel.dart';
 import 'package:chatdemo/screens/allUsers.dart';
-import 'package:chatdemo/services/services.dart';
+import 'package:chatdemo/screens/chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -336,14 +337,16 @@ class HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   } else {
+                    // get my threads
                     List threads = (snapshot.data.documents as List).where((t) {
-                      return t.data['users'].any((u) => u.documentID == currentUserId);
+                      return t.data['users']
+                          .any((u) => u.documentID == currentUserId);
                     }).toList();
                     return ListView.builder(
                       padding: EdgeInsets.all(10.0),
+                      itemCount: threads.length,
                       itemBuilder: (context, index) => ThreadItem(
                           thread: threads[index], currentUserId: currentUserId),
-                      itemCount: threads.length,
                     );
                   }
                 },
@@ -397,7 +400,26 @@ class ThreadItem extends StatefulWidget {
 }
 
 class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
-  DocumentSnapshot userSnap;
+  // DocumentSnapshot userSnap;
+  ThreadModel threadData;
+  UserModel userModel;
+
+  @override
+  void afterFirstLayout(BuildContext context) {
+    threadData = ThreadModel.fromJson(widget.thread.data);
+
+    if ((widget.thread.data["users"] as List).length == 2) {
+      DocumentReference userRef = (widget.thread.data["users"] as List)
+          .firstWhere((u) => u.documentID != widget.currentUserId);
+      userRef.get().then((snap) {
+        setState(() {
+          threadData.name = snap.data['nickname'];
+          threadData.photoUrl = snap.data['photoUrl'];
+          userModel = UserModel.fromJson(snap.data);
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -406,28 +428,27 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
       child: FlatButton(
         child: Row(
           children: <Widget>[
-            ImageAvatar(
-                imgUrl: userSnap != null ? userSnap.data['photoUrl'] : ""),
+            ImageAvatar(imgUrl: threadData != null ? threadData.photoUrl : ""),
             Flexible(
               child: Container(
                 child: Column(
                   children: <Widget>[
                     Container(
                       child: Text(
-                        userSnap != null ? userSnap.data['nickname'] : "",
+                        threadData != null ? threadData.name : "",
                         style: TextStyle(color: textColor),
                       ),
                       alignment: Alignment.centerLeft,
                       margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 5.0),
                     ),
-                    // Container(
-                    //   child: Text(
-                    //     'About me: ${document['aboutMe'] ?? 'Not available'}',
-                    //     style: TextStyle(color: textColor),
-                    //   ),
-                    //   alignment: Alignment.centerLeft,
-                    //   margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
-                    // )
+                    Container(
+                      child: Text(
+                        threadData != null ? threadData.lastMessage : "",
+                        style: TextStyle(color: textColor),
+                      ),
+                      alignment: Alignment.centerLeft,
+                      margin: EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
+                    )
                   ],
                 ),
                 margin: EdgeInsets.only(left: 20.0),
@@ -436,13 +457,11 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
           ],
         ),
         onPressed: () {
-          // Navigator.push(
-          //     context,
-          //     MaterialPageRoute(
-          //         builder: (context) => Chat(
-          //               threadId: document.documentID,
-          //               us: document['photoUrl'],
-          //             )));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      Chat(threadId: threadData.id, user: userModel)));
         },
         color: thirdColor,
         padding: EdgeInsets.fromLTRB(25.0, 10.0, 25.0, 10.0),
@@ -450,17 +469,6 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       ),
     );
-  }
-
-  @override
-  void afterFirstLayout(BuildContext context) {
-    DocumentReference userRef = (widget.thread.data["users"] as List)
-        .firstWhere((u) => u.documentID != widget.currentUserId);
-    userRef.get().then((snap) {
-      setState(() {
-        userSnap = snap;
-      });
-    });
   }
 }
 

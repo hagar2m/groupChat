@@ -16,4 +16,4 @@ final textColor = Color(0xff35477d);
 
 */
 
-const groupPhoto = 'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png';
+const groupPhoto = 'https://www.trainforeverstrong.com/wp-content/uploads/2016/04/group-icon.png';
