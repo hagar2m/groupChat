@@ -12,9 +12,9 @@ class ApiServices {
         List<dynamic> usersRef = item.data['users']; // get users of this thread
         List exists =
             usersRef.where((u) => u.documentID == currentUserId).toList();
-        if (exists != null && exists.length > 0) {
-          // if currentUser is found in users array
-          ThreadModel thread = ThreadModel.fromJson(item.data);
+        ThreadModel thread = ThreadModel.fromJson(item.data);
+
+        if (exists != null && exists.length > 0) { // if currentUser is found in users array
           if (usersRef.length == 2) {
             // if this thread is a chat
             usersRef.map((item) {
@@ -26,8 +26,9 @@ class ApiServices {
               });
             }).toList();
           }
-          myThreads.add(thread);
         }
+        myThreads.add(thread);
+
       }).toList();
     }
     return myThreads;
