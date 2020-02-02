@@ -14,8 +14,7 @@ class ApiServices {
             usersRef.where((u) => u.documentID == currentUserId).toList();
         ThreadModel thread = ThreadModel.fromJson(item.data);
 
-        if (exists != null && exists.length > 0) { // if currentUser is found in users array
-          if (usersRef.length == 2) {
+        if (exists != null && exists.length > 0 && usersRef.length == 2) { // if currentUser is found in users array
             // if this thread is a chat
             usersRef.map((item) {
               item.get().then((user) {
@@ -25,7 +24,6 @@ class ApiServices {
                 }
               });
             }).toList();
-          }
         }
         myThreads.add(thread);
 
