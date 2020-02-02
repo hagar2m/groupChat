@@ -339,7 +339,6 @@ class HomeScreenState extends State<HomeScreen> {
                     List threads = (snapshot.data.documents as List).where((t) {
                       return t.data['users'].any((u) => u.documentID == currentUserId);
                     }).toList();
-
                     return ListView.builder(
                       padding: EdgeInsets.all(10.0),
                       itemBuilder: (context, index) => ThreadItem(
