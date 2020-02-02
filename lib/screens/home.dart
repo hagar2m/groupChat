@@ -46,7 +46,7 @@ class HomeScreenState extends State<HomeScreen> {
     const Choice(title: 'New group', icon: Icons.group_add),
   ];
 
-  List _myThreads = [];
+  // List _myThreads = [];
 
   @override
   void initState() {
@@ -60,7 +60,7 @@ class HomeScreenState extends State<HomeScreen> {
     setState(() {
       isLoading = true;
     });
-    _myThreads = await ApiServices.getThreads(currentUserId);
+    // _myThreads = await ApiServices.getThreads(currentUserId);
     setState(() {
       isLoading = false;
     });
@@ -324,14 +324,71 @@ class HomeScreenState extends State<HomeScreen> {
       body: WillPopScope(
         child: Stack(
           children: <Widget>[
-            // List
-            ListView.builder(
-              itemCount: _myThreads.length,
-              padding: EdgeInsets.all(8.0),
-              itemBuilder: (context, index) {
-                return buildItem(_myThreads[index]);
-              },
+            Container(
+              child: StreamBuilder(
+                stream: Firestore.instance.collection('threads').snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                      ),
+                    );
+                  } else {
+                    List threads = snapshot.data.documents;
+                    List<ThreadModel> myThreads = [];
+
+                    threads.map((item) {
+                      List<dynamic> usersRef =
+                          item.data['users']; // get users of this thread
+                      List exists = usersRef
+                          .where((u) => u.documentID == currentUserId)
+                          .toList();
+                      ThreadModel thread = ThreadModel.fromJson(item.data);
+                      
+                      if (exists != null && exists.length > 0 && usersRef.length == 2) { // if currentUser is found in users array
+                        // if this thread is a chat
+                        List filterAnotherUser = usersRef
+                          .where((u) => u.documentID != currentUserId)
+                          .toList();
+                          
+                        filterAnotherUser[0].get().then((user) {
+                          thread.name = user.data['nickname'];
+                          thread.photoUrl = user.data['photoUrl'];
+                        });
+
+                        myThreads.add(thread);
+                        
+                        // usersRef.map((item) {
+                        //   item.get().then((user) {
+                        //     if (user.data['id'] != currentUserId) {
+                        //       ThreadModel thread = ThreadModel();
+                        //       thread.name = user.data['nickname'];
+                        //       thread.photoUrl = user.data['photoUrl'];
+                        //       print('thread.name ${thread.name}');
+                        //     }
+                        //   });
+                        // }).toList();
+                      }
+                    }).toList();
+                    return ListView.builder(
+                      padding: EdgeInsets.all(10.0),
+                      itemBuilder: (context, index) =>
+                          buildItem(myThreads[index]),
+                      itemCount: myThreads.length,
+                    );
+                  }
+                },
+              ),
             ),
+            // List
+            // ListView.builder(
+            //   itemCount: _myThreads.length,
+            //   padding: EdgeInsets.all(8.0),
+            //   itemBuilder: (context, index) {
+            //     return buildItem(_myThreads[index]);
+            //   },
+            // ),
             // Loading
             Positioned(
               child: isLoading
