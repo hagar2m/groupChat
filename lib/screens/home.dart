@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'package:after_layout/after_layout.dart';
 import 'package:chatdemo/models/thread.dart';
 import 'package:chatdemo/screens/allUsers.dart';
 import 'package:chatdemo/services/services.dart';
@@ -335,47 +336,15 @@ class HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   } else {
-                    List threads = snapshot.data.documents;
-                    List<ThreadModel> myThreads = [];
-
-                    threads.map((item) {
-                      List<dynamic> usersRef =
-                          item.data['users']; // get users of this thread
-                      List exists = usersRef
-                          .where((u) => u.documentID == currentUserId)
-                          .toList();
-                      ThreadModel thread = ThreadModel.fromJson(item.data);
-                      
-                      if (exists != null && exists.length > 0 && usersRef.length == 2) { // if currentUser is found in users array
-                        // if this thread is a chat
-                        List filterAnotherUser = usersRef
-                          .where((u) => u.documentID != currentUserId)
-                          .toList();
-                          
-                        filterAnotherUser[0].get().then((user) {
-                          thread.name = user.data['nickname'];
-                          thread.photoUrl = user.data['photoUrl'];
-                        });
-
-                        myThreads.add(thread);
-                        
-                        // usersRef.map((item) {
-                        //   item.get().then((user) {
-                        //     if (user.data['id'] != currentUserId) {
-                        //       ThreadModel thread = ThreadModel();
-                        //       thread.name = user.data['nickname'];
-                        //       thread.photoUrl = user.data['photoUrl'];
-                        //       print('thread.name ${thread.name}');
-                        //     }
-                        //   });
-                        // }).toList();
-                      }
+                    List threads = (snapshot.data.documents as List).where((t) {
+                      return t.data['users'].any((u) => u.documentID == currentUserId);
                     }).toList();
+
                     return ListView.builder(
                       padding: EdgeInsets.all(10.0),
-                      itemBuilder: (context, index) =>
-                          buildItem(myThreads[index]),
-                      itemCount: myThreads.length,
+                      itemBuilder: (context, index) => ThreadItem(
+                          thread: threads[index], currentUserId: currentUserId),
+                      itemCount: threads.length,
                     );
                   }
                 },
@@ -416,22 +385,37 @@ class HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-//put
-  Widget buildItem(ThreadModel thread) {
+class ThreadItem extends StatefulWidget {
+  final DocumentSnapshot thread;
+  final String currentUserId;
+
+  ThreadItem({this.thread, this.currentUserId});
+
+  @override
+  _ThreadItemState createState() => _ThreadItemState();
+}
+
+class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
+  DocumentSnapshot userSnap;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(bottom: 10.0, left: 5.0, right: 5.0),
       child: FlatButton(
         child: Row(
           children: <Widget>[
-            ImageAvatar(imgUrl: thread.photoUrl),
+            ImageAvatar(
+                imgUrl: userSnap != null ? userSnap.data['photoUrl'] : ""),
             Flexible(
               child: Container(
                 child: Column(
                   children: <Widget>[
                     Container(
                       child: Text(
-                        '${thread.name}',
+                        userSnap != null ? userSnap.data['nickname'] : "",
                         style: TextStyle(color: textColor),
                       ),
                       alignment: Alignment.centerLeft,
@@ -467,6 +451,17 @@ class HomeScreenState extends State<HomeScreen> {
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       ),
     );
+  }
+
+  @override
+  void afterFirstLayout(BuildContext context) {
+    DocumentReference userRef = (widget.thread.data["users"] as List)
+        .firstWhere((u) => u.documentID != widget.currentUserId);
+    userRef.get().then((snap) {
+      setState(() {
+        userSnap = snap;
+      });
+    });
   }
 }
 

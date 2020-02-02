@@ -36,6 +36,7 @@ dependencies:
   flutter_local_notifications: 
   photo_view: 
   rflutter_alert:
+  after_layout: ^1.0.7+2
 
 dev_dependencies:
   flutter_test:
