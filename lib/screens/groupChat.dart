@@ -15,8 +15,8 @@ import '../utils/colors.dart';
 class GroupChat extends StatelessWidget {
   final String threadId;
   final String threadName;
-
-  GroupChat({@required this.threadId, @required this.threadName});
+  final bool isGroup;
+  GroupChat({ @required this.threadId, @required this.threadName, this.isGroup });
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +30,7 @@ class GroupChat extends StatelessWidget {
       ),
       body: ChatScreen(
         threadId: threadId,
+        isGroup: isGroup
       ),
     );
   }
@@ -37,17 +38,19 @@ class GroupChat extends StatelessWidget {
 
 class ChatScreen extends StatefulWidget {
   final String threadId;
+  final bool isGroup;
 
-  ChatScreen({@required this.threadId});
+  ChatScreen({ @required this.threadId, this.isGroup });
 
   @override
-  State createState() => ChatScreenState(threadId: threadId);
+  State createState() => ChatScreenState(threadId: threadId,  isGroup: isGroup);
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  ChatScreenState({@required this.threadId});
+  ChatScreenState({ @required this.threadId, this.isGroup });
 
   String threadId;
+  final bool isGroup;
   String currentUserId;
   String currentUserPhoto;
   String currentUserName;
@@ -151,7 +154,7 @@ class ChatScreenState extends State<ChatScreen> {
           {
             'threadId': widget.threadId,
             'idFrom': currentUserId,
-            'idTo': '',
+            'idTo': widget.isGroup ? 'isGroup' : '',
             'timestamp': timeStamp,
             'content': content,
             'type': type,

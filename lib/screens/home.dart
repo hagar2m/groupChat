@@ -376,7 +376,7 @@ class ThreadItem extends StatefulWidget {
 class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
   // DocumentSnapshot userSnap;
   ThreadModel threadData;
-
+  bool isGroup = true;
   @override
   void afterFirstLayout(BuildContext context) {
 
@@ -393,6 +393,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
         setState(() {
           threadData.name = snap.data['nickname'];
           threadData.photoUrl = snap.data['photoUrl'];
+          isGroup = false;
         });
       });
     }
@@ -446,7 +447,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => GroupChat(threadId: threadData.id, threadName: threadData.name)));
+              builder: (context) => GroupChat(threadId: threadData.id, threadName: threadData.name, isGroup: isGroup,)));
    
   }
 }
