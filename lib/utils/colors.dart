@@ -8,4 +8,4 @@ final thirdColor = Colors.white;
 final accentColor = Color(0xfffa8282);
 
 
-const groupPhoto = 'https://image.flaticon.com/icons/png/128/25/25437.png';
+const groupPhoto = 'https://i.pinimg.com/originals/a4/78/8a/a4788a1d46615a00cc1a37a7b37d91a3.png';

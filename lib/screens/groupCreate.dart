@@ -51,6 +51,8 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
 
     var threadId =
         currentUserId + DateTime.now().millisecondsSinceEpoch.toString();
+    
+    firebaseMessaging.subscribeToTopic(threadId);
 
     Firestore.instance.collection('threads').document(threadId).setData({
       'name': textEditingController.text,
@@ -62,6 +64,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
           .toList(),
       'lastMessage': ''
     });
+
     _clearState();
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => GroupChat(
