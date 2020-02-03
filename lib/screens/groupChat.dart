@@ -13,40 +13,41 @@ import './fullPhoto.dart';
 import '../utils/colors.dart';
 
 class GroupChat extends StatelessWidget {
-  final String groupId;
+  final String threadId;
+  final String threadName;
 
-  GroupChat({ Key key, @required this.groupId }) : super(key: key);
+  GroupChat({ @required this.threadId, @required this.threadName });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Group CHAT',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          '$threadName',
+          style: TextStyle(color: thirdColor, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: ChatScreen(
-        groupId: groupId,
+        threadId: threadId,
       ),
     );
   }
 }
 
 class ChatScreen extends StatefulWidget {
-  final String groupId;
+  final String threadId;
 
-  ChatScreen({ Key key, @required this.groupId }) : super(key: key);
+  ChatScreen({ Key key, @required this.threadId }) : super(key: key);
 
   @override
-  State createState() => ChatScreenState(groupId: groupId);
+  State createState() => ChatScreenState(threadId: threadId);
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  ChatScreenState({ Key key, @required this.groupId });
+  ChatScreenState({ Key key, @required this.threadId });
 
-  String groupId;
+  String threadId;
   String currentUserId;
   String currentUserPhoto;
   String currentUserName;
@@ -137,8 +138,8 @@ class ChatScreenState extends State<ChatScreen> {
     if (content.trim() != '') {
       textEditingController.clear();
       String timeStamp =  DateTime.now().millisecondsSinceEpoch.toString();
-      var documentReference = Firestore.instance.collection('messages').document(widget.groupId)
-          .collection(widget.groupId)
+      var documentReference = Firestore.instance.collection('messages').document(widget.threadId)
+          .collection(widget.threadId)
           .document(timeStamp);
 
       Firestore.instance.runTransaction((transaction) async {
@@ -146,7 +147,7 @@ class ChatScreenState extends State<ChatScreen> {
         await transaction.set(
           documentReference,
            {
-            'threadId': widget.groupId,
+            'threadId': widget.threadId,
             'idFrom': currentUserId,
             'idTo': '',
             'timestamp': timeStamp,
@@ -160,7 +161,7 @@ class ChatScreenState extends State<ChatScreen> {
 
        Firestore.instance
         .collection('threads')
-        .document(widget.groupId)
+        .document(widget.threadId)
         .updateData({
           'lastMessage': content,
           'lastMessageTime': timeStamp
@@ -285,7 +286,7 @@ class ChatScreenState extends State<ChatScreen> {
                     document['type'] == 0
                     ? Container(
                         child: Text(
-                          "${document['content']}",
+                          "$index - ${document['content']}",
                           style: TextStyle(color: Colors.white),
                         ),
                         padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
@@ -371,12 +372,19 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   bool isLastMessageLeft(int index) {
-    if ((index > 0 && listMessage != null && listMessage[index - 1]['idFrom'] == currentUserId) || index == 0) {
+    if ((index > 0 && listMessage != null && listMessage[index - 1]['idFrom'] != listMessage[index]['idFrom'] ) || index == 0) {
       return true;
     } else {
       return false;
     }
   }
+  // bool isLastMessageLeft(int index) {
+  //   if ((index > 0 && listMessage != null && listMessage[index - 1]['idFrom'] == currentUserId) || index == 0) {
+  //     return true;
+  //   } else {
+  //     return false;
+  //   }
+  // }
 
   bool isLastMessageRight(int index) {
     if ((index > 0 && listMessage != null && listMessage[index - 1]['idFrom'] != currentUserId) || index == 0) {
@@ -614,13 +622,13 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget buildListMessage() {
     return Flexible(
-      child: widget.groupId == ''
+      child: widget.threadId == ''
           ? Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(primaryColor)))
           : StreamBuilder(
               stream: Firestore.instance
                   .collection('messages')
-                  .document(widget.groupId)
-                  .collection(widget.groupId)
+                  .document(widget.threadId)
+                  .collection(widget.threadId)
                   .orderBy('timestamp', descending: true)
                   .limit(20)
                   .snapshots(),

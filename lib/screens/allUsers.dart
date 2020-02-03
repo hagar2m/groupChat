@@ -1,4 +1,4 @@
-import 'package:chatdemo/screens/chat.dart';
+import 'package:chatdemo/screens/groupChat.dart';
 import 'package:chatdemo/screens/groupCreate.dart';
 import 'package:chatdemo/widgets/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -38,7 +38,7 @@ class AllUsersState extends State<AllUsers> {
   void finishChoosing(UserModel selectedUser) async {
     //   // type: 0 = text, 1 = image, 2 = sticker
     var threadId;
-
+    String _threadName = selectedUser.nickname;
      if (currentUserId.hashCode <= selectedUser.id.hashCode) {
       threadId = '$currentUserId-${selectedUser.id}';
     } else {
@@ -46,7 +46,7 @@ class AllUsersState extends State<AllUsers> {
     }
 
     Firestore.instance.collection('threads').document(threadId).setData({
-      'name': selectedUser.nickname,
+      'name': _threadName,
       'photoUrl': selectedUser.photoUrl,
       'id': threadId,
       'users': [
@@ -61,10 +61,7 @@ class AllUsersState extends State<AllUsers> {
         context,
         MaterialPageRoute(
             builder: (context) =>
-                Chat(threadId: threadId, user: selectedUser)));
-
-    // List users;
-    // users.contains((DocumentReference u) => u.documentID == "")
+                GroupChat(threadId: threadId, threadName: _threadName,)));
   }
 
   @override

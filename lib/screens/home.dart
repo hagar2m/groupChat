@@ -3,10 +3,6 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:after_layout/after_layout.dart';
 import 'package:chatdemo/models/thread.dart';
-import 'package:chatdemo/models/userModel.dart';
-import 'package:chatdemo/screens/allUsers.dart';
-import 'package:chatdemo/screens/chat.dart';
-import 'package:chatdemo/screens/groupChat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -385,8 +381,6 @@ class ThreadItem extends StatefulWidget {
 class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
   // DocumentSnapshot userSnap;
   ThreadModel threadData;
-  UserModel userModel;
-  bool isGroup = true;
 
   @override
   void afterFirstLayout(BuildContext context) {
@@ -404,8 +398,6 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
         setState(() {
           threadData.name = snap.data['nickname'];
           threadData.photoUrl = snap.data['photoUrl'];
-          userModel = UserModel.fromJson(snap.data);
-          isGroup = false;
         });
       });
     }
@@ -456,17 +448,10 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
   }
 
   void _onPressed () {
-    if (isGroup == true) {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => GroupChat(groupId: threadData.id)));
-    } else {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  Chat(threadId: threadData.id, user: userModel)));
-    }
+              builder: (context) => GroupChat(threadId: threadData.id, threadName: threadData.name)));
+   
   }
 }

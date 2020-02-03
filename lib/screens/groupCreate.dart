@@ -64,7 +64,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     });
     _clearState();
     Navigator.push(context,
-        MaterialPageRoute(builder: (context) => GroupChat(groupId: threadId)));
+        MaterialPageRoute(builder: (context) => GroupChat(threadId: threadId, threadName: textEditingController.text,)));
   }
 
   void _clearState() {
