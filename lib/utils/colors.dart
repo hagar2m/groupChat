@@ -16,4 +16,4 @@ final textColor = Color(0xff35477d);
 
 */
 
-const groupPhoto = 'https://www.trainforeverstrong.com/wp-content/uploads/2016/04/group-icon.png';
+const groupPhoto = 'https://image.flaticon.com/icons/png/128/25/25437.png';

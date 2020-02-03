@@ -6,6 +6,7 @@ import 'package:chatdemo/models/thread.dart';
 import 'package:chatdemo/models/userModel.dart';
 import 'package:chatdemo/screens/allUsers.dart';
 import 'package:chatdemo/screens/chat.dart';
+import 'package:chatdemo/screens/groupChat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -13,14 +14,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../utils/colors.dart';
 
-import './login.dart';
-import './settings.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../test.dart';
-import './groupCreate.dart';
+import './screens.dart';
 import '../widgets/imageAvatar.dart';
+import '../models/menuChoice.dart';
+
+List<Choice> choices = const <Choice>[
+  const Choice(title: 'Settings', icon: Icons.settings),
+  const Choice(title: 'Log out', icon: Icons.exit_to_app),
+  const Choice(title: 'New group', icon: Icons.group_add),
+];
 
 class HomeScreen extends StatefulWidget {
   final String currentUserId;
@@ -42,30 +48,13 @@ class HomeScreenState extends State<HomeScreen> {
   final GoogleSignIn googleSignIn = GoogleSignIn();
 
   bool isLoading = false;
-  List<Choice> choices = const <Choice>[
-    const Choice(title: 'Settings', icon: Icons.settings),
-    const Choice(title: 'Log out', icon: Icons.exit_to_app),
-    const Choice(title: 'New group', icon: Icons.group_add),
-  ];
-
-  // List _myThreads = [];
 
   @override
   void initState() {
     super.initState();
+
     registerNotification();
     configLocalNotification();
-    getThreads();
-  }
-
-  getThreads() async {
-    setState(() {
-      isLoading = true;
-    });
-    // _myThreads = await ApiServices.getThreads(currentUserId);
-    setState(() {
-      isLoading = false;
-    });
   }
 
   void registerNotification() {
@@ -346,20 +335,14 @@ class HomeScreenState extends State<HomeScreen> {
                       padding: EdgeInsets.all(10.0),
                       itemCount: threads.length,
                       itemBuilder: (context, index) => ThreadItem(
-                          thread: threads[index], currentUserId: currentUserId),
+                        thread: threads[index], 
+                        currentUserId: currentUserId
+                      ),
                     );
                   }
                 },
               ),
             ),
-            // List
-            // ListView.builder(
-            //   itemCount: _myThreads.length,
-            //   padding: EdgeInsets.all(8.0),
-            //   itemBuilder: (context, index) {
-            //     return buildItem(_myThreads[index]);
-            //   },
-            // ),
             // Loading
             Positioned(
               child: isLoading
@@ -403,10 +386,16 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
   // DocumentSnapshot userSnap;
   ThreadModel threadData;
   UserModel userModel;
+  bool isGroup = true;
 
   @override
   void afterFirstLayout(BuildContext context) {
-    threadData = ThreadModel.fromJson(widget.thread.data);
+
+    setState(() {
+      threadData = ThreadModel.fromJson(widget.thread.data);
+      // threadData.toString();
+      // print('-----------------');
+    });
 
     if ((widget.thread.data["users"] as List).length == 2) {
       DocumentReference userRef = (widget.thread.data["users"] as List)
@@ -416,6 +405,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
           threadData.name = snap.data['nickname'];
           threadData.photoUrl = snap.data['photoUrl'];
           userModel = UserModel.fromJson(snap.data);
+          isGroup = false;
         });
       });
     }
@@ -456,13 +446,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
             ),
           ],
         ),
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      Chat(threadId: threadData.id, user: userModel)));
-        },
+        onPressed: _onPressed,
         color: thirdColor,
         padding: EdgeInsets.fromLTRB(25.0, 10.0, 25.0, 10.0),
         shape:
@@ -470,10 +454,19 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
       ),
     );
   }
-}
 
-class Choice {
-  const Choice({this.title, this.icon});
-  final String title;
-  final IconData icon;
+  void _onPressed () {
+    if (isGroup == true) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => GroupChat(groupId: threadData.id)));
+    } else {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  Chat(threadId: threadData.id, user: userModel)));
+    }
+  }
 }
