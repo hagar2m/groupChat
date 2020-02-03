@@ -6,7 +6,7 @@ import '../utils/colors.dart';
 class FullPhoto extends StatelessWidget {
   final String url;
 
-  FullPhoto({Key key, @required this.url}) : super(key: key);
+  FullPhoto({ @required this.url });
 
   @override
   Widget build(BuildContext context) {

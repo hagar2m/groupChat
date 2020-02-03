@@ -9,10 +9,8 @@ class ApiServices {
       if (snapshot.documents != null) {
         List threads = snapshot.documents;
         threads.map((item) {
-          List<dynamic> usersRef =
-              item.data['users']; // get users of this thread
-          List exists =
-              usersRef.where((u) => u.documentID == currentUserId).toList();
+          List<dynamic> usersRef = item.data['users']; // get users of this thread
+          List exists = usersRef.where((u) => u.documentID == currentUserId).toList();
 
           if (exists != null && exists.length > 0 && usersRef.length == 2) {
             // if currentUser is found in users array
@@ -36,25 +34,3 @@ class ApiServices {
     return myThreads;
   }
 }
-
-/*
-String name = '';
-    String photoUrl = ''; 
-    List<dynamic> usersRef = document['users'];
-    if (usersRef.length == 2){
-    usersRef.map((item) {
-      item.get().then((v) {
-        print('object before');
-        if (v.data['id'] != currentUserId) {
-          
-        print('object after ${v.data}');
-          name = v.data['nickname'];
-          photoUrl = v.data['photoUrl'];
-        }
-      });
-    }).toList();
-    }else{
-      name = document['nickname'];
-      photoUrl = document['photoUrl'];
-    }
- */

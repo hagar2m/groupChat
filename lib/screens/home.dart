@@ -159,13 +159,13 @@ class HomeScreenState extends State<HomeScreen> {
         payload: json.encode(message));
   }
 
-  Future<bool> onBackPress() {
-    openDialog();
-    return Future.value(false);
-  }
+  // Future<bool> onBackPress() {
+  //   openDialog();
+  //   // return Future.value(false);
+  // }
 
-  Future<Null> openDialog() async {
-    switch (await showDialog(
+  Future<bool> openDialog() async {
+    return showDialog(
         context: context,
         builder: (BuildContext context) {
           return SimpleDialog(
@@ -203,7 +203,7 @@ class HomeScreenState extends State<HomeScreen> {
               ),
               SimpleDialogOption(
                 onPressed: () {
-                  Navigator.pop(context, 0);
+                  Navigator.pop(context, false);
                 },
                 child: Row(
                   children: <Widget>[
@@ -224,7 +224,8 @@ class HomeScreenState extends State<HomeScreen> {
               ),
               SimpleDialogOption(
                 onPressed: () {
-                  Navigator.pop(context, 1);
+                  Navigator.pop(context, true);
+                  exit(1);
                 },
                 child: Row(
                   children: <Widget>[
@@ -245,13 +246,7 @@ class HomeScreenState extends State<HomeScreen> {
               ),
             ],
           );
-        })) {
-      case 0:
-        break;
-      case 1:
-        exit(0);
-        break;
-    }
+        });
   }
 
   Future<Null> handleSignOut() async {
@@ -309,6 +304,7 @@ class HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: WillPopScope(
+        onWillPop: openDialog,
         child: Stack(
           children: <Widget>[
             Container(
@@ -354,7 +350,6 @@ class HomeScreenState extends State<HomeScreen> {
             )
           ],
         ),
-        onWillPop: onBackPress,
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: accentColor,
