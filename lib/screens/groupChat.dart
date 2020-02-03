@@ -152,10 +152,20 @@ class ChatScreenState extends State<ChatScreen> {
             'timestamp': timeStamp,
             'content': content,
             'type': type,
-            'nameFrom': currentUserName
+            'nameFrom': currentUserName,
+            'photoFrom': currentUserPhoto
           },
         );
       });
+
+       Firestore.instance
+        .collection('threads')
+        .document(widget.groupId)
+        .updateData({
+          'lastMessage': content,
+          'lastMessageTime': timeStamp
+          //Firestore.instance.collection('messages').document(widget.threadId).collection(widget.threadId).document(timeStamp)
+          });
       listScrollController.animateTo(0.0, duration: Duration(milliseconds: 300), curve: Curves.easeOut);
     } else {
       Fluttertoast.showToast(msg: 'Nothing to send');
@@ -242,7 +252,6 @@ class ChatScreenState extends State<ChatScreen> {
         mainAxisAlignment: MainAxisAlignment.end,
       );
     } else {
-      print("document['photoFrom']: ${document['photoFrom']}");
       // Left (peer message)
       return Container(
         child: Column(
