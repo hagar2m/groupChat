@@ -173,7 +173,6 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   Widget buildItem(int index, DocumentSnapshot document) {
-    // print("index: $index - msg id: ${document['idFrom']}");
     if (document['idFrom'] == currentUserId) {
       // Right (my message)
       return Row(
@@ -286,7 +285,7 @@ class ChatScreenState extends State<ChatScreen> {
                     document['type'] == 0
                     ? Container(
                         child: Text(
-                          "$index ${document['content']}",
+                          "${document['content']}",
                           style: TextStyle(color: Colors.white),
                         ),
                         padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
