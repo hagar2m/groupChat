@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:after_layout/after_layout.dart';
 import 'package:chatdemo/models/thread.dart';
+import 'package:chatdemo/models/userModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -377,6 +378,8 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
   // DocumentSnapshot userSnap;
   ThreadModel threadData;
   bool isGroup = true;
+  UserModel userModel;
+
   @override
   void afterFirstLayout(BuildContext context) {
 
@@ -394,6 +397,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
           threadData.name = snap.data['nickname'];
           threadData.photoUrl = snap.data['photoUrl'];
           isGroup = false;
+          userModel  = UserModel.fromJson(snap.data);
         });
       });
     }
@@ -447,7 +451,10 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => GroupChat(threadId: threadData.id, threadName: threadData.name, isGroup: isGroup,)));
-   
+              builder: (context) => GroupChat(
+                threadId: threadData.id, 
+                threadName: threadData.name,
+                userModel: userModel
+            )));
   }
 }

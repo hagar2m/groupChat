@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:chatdemo/models/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,8 +16,8 @@ import '../utils/colors.dart';
 class GroupChat extends StatelessWidget {
   final String threadId;
   final String threadName;
-  final bool isGroup;
-  GroupChat({ @required this.threadId, @required this.threadName, this.isGroup });
+  final UserModel userModel;
+  GroupChat({ @required this.threadId, @required this.threadName, this.userModel });
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,7 @@ class GroupChat extends StatelessWidget {
       ),
       body: ChatScreen(
         threadId: threadId,
-        isGroup: isGroup
+        userModel: userModel
       ),
     );
   }
@@ -38,19 +39,19 @@ class GroupChat extends StatelessWidget {
 
 class ChatScreen extends StatefulWidget {
   final String threadId;
-  final bool isGroup;
+  final UserModel userModel;
 
-  ChatScreen({ @required this.threadId, this.isGroup });
+  ChatScreen({ @required this.threadId, this.userModel });
 
   @override
-  State createState() => ChatScreenState(threadId: threadId,  isGroup: isGroup);
+  State createState() => ChatScreenState(threadId: threadId,  selectedUser: userModel);
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  ChatScreenState({ @required this.threadId, this.isGroup });
+  ChatScreenState({ @required this.threadId, this.selectedUser });
 
   String threadId;
-  final bool isGroup;
+  UserModel selectedUser;
   String currentUserId;
   String currentUserPhoto;
   String currentUserName;
@@ -154,7 +155,7 @@ class ChatScreenState extends State<ChatScreen> {
           {
             'threadId': widget.threadId,
             'idFrom': currentUserId,
-            'idTo': widget.isGroup ? 'isGroup' : '',
+            'idTo': selectedUser != null ? selectedUser.id : '',
             'timestamp': timeStamp,
             'content': content,
             'type': type,

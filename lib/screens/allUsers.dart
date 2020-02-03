@@ -61,7 +61,11 @@ class AllUsersState extends State<AllUsers> {
         context,
         MaterialPageRoute(
             builder: (context) =>
-                GroupChat(threadId: threadId, threadName: _threadName,)));
+                GroupChat(
+                  threadId: threadId, 
+                  threadName: _threadName, 
+                  userModel: selectedUser
+                )));
   }
 
   @override
