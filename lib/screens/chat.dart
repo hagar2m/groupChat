@@ -102,13 +102,6 @@ class ChatScreenState extends State<ChatScreen> {
     prefs = await SharedPreferences.getInstance();
     currentUserId = prefs.getString('id') ?? '';
     currentUserName = prefs.getString('nickname') ?? '';
-    // print('my id: $id');
-    // print("----------------------------");
-    // if (id.hashCode <= threadId.hashCode) {
-    //   groupChatId = '$id-$threadId';
-    // } else {
-    //   groupChatId = '$threadId-$id';
-    // }
 
     Firestore.instance
         .collection('users')
@@ -278,7 +271,7 @@ class ChatScreenState extends State<ChatScreen> {
                     )
                   // Sticker
                   : Container(
-                      child: new Image.asset(
+                      child: Image.asset(
                         'images/${document['content']}.gif',
                         width: 100.0,
                         height: 100.0,
@@ -391,7 +384,7 @@ class ChatScreenState extends State<ChatScreen> {
                             margin: EdgeInsets.only(left: 10.0),
                           )
                         : Container(
-                            child: new Image.asset(
+                            child: Image.asset(
                               'images/${document['content']}.gif',
                               width: 100.0,
                               height: 100.0,
@@ -521,8 +514,8 @@ class ChatScreenState extends State<ChatScreen> {
         ],
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       ),
-      decoration: new BoxDecoration(
-          border: new Border(top: new BorderSide(color: textColor, width: 0.5)),
+      decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: textColor, width: 0.5)),
           color: Colors.white),
       padding: EdgeInsets.all(5.0),
       height: 180.0,
@@ -588,10 +581,10 @@ class ChatScreenState extends State<ChatScreen> {
 
           // Button send message
           Material(
-            child: new Container(
-              margin: new EdgeInsets.symmetric(horizontal: 8.0),
-              child: new IconButton(
-                icon: new Icon(Icons.send),
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 8.0),
+              child: IconButton(
+                icon: Icon(Icons.send),
                 onPressed: () => onSendMessage(textEditingController.text, 0),
                 color: primaryColor,
               ),
@@ -602,8 +595,8 @@ class ChatScreenState extends State<ChatScreen> {
       ),
       width: double.infinity,
       height: 50.0,
-      decoration: new BoxDecoration(
-          border: new Border(top: new BorderSide(color: textColor, width: 0.5)),
+      decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: textColor, width: 0.5)),
           color: Colors.white),
     );
   }

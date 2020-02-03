@@ -49,6 +49,7 @@ class ChatScreenState extends State<ChatScreen> {
   String groupId;
   String currentUserId;
   String currentUserPhoto;
+  String currentUserName;
 
   var listMessage;
   SharedPreferences prefs;
@@ -88,6 +89,7 @@ class ChatScreenState extends State<ChatScreen> {
     prefs = await SharedPreferences.getInstance();
     currentUserId = prefs.getString('id') ?? '';
     currentUserPhoto = prefs.getString('photoUrl');
+    currentUserName = prefs.getString('nickname') ?? '';
 
     setState(() {});
   }
@@ -134,24 +136,23 @@ class ChatScreenState extends State<ChatScreen> {
     // type: 0 = text, 1 = image, 2 = sticker
     if (content.trim() != '') {
       textEditingController.clear();
-
-      var documentReference = Firestore.instance.collection('groupMessages').document(widget.groupId)
+      String timeStamp =  DateTime.now().millisecondsSinceEpoch.toString();
+      var documentReference = Firestore.instance.collection('messages').document(widget.groupId)
           .collection(widget.groupId)
-          .document(DateTime.now().millisecondsSinceEpoch.toString());
+          .document(timeStamp);
 
       Firestore.instance.runTransaction((transaction) async {
+
         await transaction.set(
           documentReference,
-          {
-            'groupId': widget.groupId,
+           {
+            'threadId': widget.groupId,
             'idFrom': currentUserId,
-            'photoFrom': currentUserPhoto,
-            'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
+            'idTo': '',
+            'timestamp': timeStamp,
             'content': content,
             'type': type,
-            // 'data': {
-            //   'name': 'hagar mekky1'
-            // }
+            'nameFrom': currentUserName
           },
         );
       });
@@ -609,7 +610,7 @@ class ChatScreenState extends State<ChatScreen> {
           ? Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(primaryColor)))
           : StreamBuilder(
               stream: Firestore.instance
-                  .collection('groupMessages')
+                  .collection('messages')
                   .document(widget.groupId)
                   .collection(widget.groupId)
                   .orderBy('timestamp', descending: true)
