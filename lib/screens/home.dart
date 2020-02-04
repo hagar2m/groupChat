@@ -58,7 +58,7 @@ class HomeScreenState extends State<HomeScreen> {
 
     firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
       print('onMessage: $message');
-      showNotification(message['notification']);
+      showNotification(message);
       return;
     }, onResume: (Map<String, dynamic> message) {
       print('onResume: $message');
@@ -69,7 +69,7 @@ class HomeScreenState extends State<HomeScreen> {
     });
 
     firebaseMessaging.getToken().then((token) {
-      print('token: $token');
+      // print('token: $token');
       Firestore.instance
           .collection('users')
           .document(currentUserId)
@@ -90,16 +90,24 @@ class HomeScreenState extends State<HomeScreen> {
         onSelectNotification: onSelectNotification);
   }
 
-  Future onSelectNotification(String payload) async {
-    print('--onSelectNotification-- payload: $payload ');
+  Future onSelectNotification(String message) async {
+    // print('--onSelectNotification-- payload: $payload ');
 
-    if (payload != null) {
-      debugPrint('notification payload: ' + payload);
+    if (message != null) {
+
+      print(' ===================================== object ========');
+      Map<String, dynamic> data =  json.decode(message)['data'] ;
+      // debugPrint('notification payload: ' + payload);
+      UserModel userModel = UserModel(id: data['idTo'], nickname: data['threadname']);
+      await Navigator.push(
+      context,
+      new MaterialPageRoute(builder: (context) => 
+      GroupChat(threadId: data['threadId'],
+       threadName: data['threadname'],
+        userModel: userModel),
+    ));
     }
-    // await Navigator.push(
-    //   context,
-    //   new MaterialPageRoute(builder: (context) => HomeScreen(currentUserId: currentUserId)),
-    // );
+    
   }
 
   Future onDidReceiveLocalNotification(
@@ -159,15 +167,10 @@ class HomeScreenState extends State<HomeScreen> {
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(0, message['title'].toString(),
-        message['body'].toString(), platformChannelSpecifics,
+    await flutterLocalNotificationsPlugin.show(0, message['notification']['title'].toString(),
+        message['notification']['body'].toString(), platformChannelSpecifics,
         payload: json.encode(message));
   }
-
-  // Future<bool> onBackPress() {
-  //   openDialog();
-  //   // return Future.value(false);
-  // }
 
   Future<bool> openDialog() async {
     return showDialog(
@@ -394,6 +397,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
         // print('-----------------');
       });
     }
+    // get name and photo of second user
     if ((widget.thread.data["users"] as List).length == 2) {
       DocumentReference userRef = (widget.thread.data["users"] as List)
           .firstWhere((u) => u.documentID != widget.currentUserId);
@@ -417,7 +421,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
       child: FlatButton(
         child: Row(
           children: <Widget>[
-            ImageAvatar(imgUrl: threadData != null ? threadData.photoUrl : groupPhoto),
+            threadData != null ? ImageAvatar(imgUrl: threadData.photoUrl) : SizedBox(),
             Flexible(
               child: Container(
                 child: Column(

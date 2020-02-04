@@ -161,9 +161,6 @@ class ChatScreenState extends State<ChatScreen> {
             'type': type,
             'nameFrom': currentUserName,
             'photoFrom': currentUserPhoto,
-            'data': {
-
-            }
           },
          
         );
