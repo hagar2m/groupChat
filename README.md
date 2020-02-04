@@ -1,9 +1,11 @@
-# group chat demo
+# Flutter Chat Demo
 
-A Grroup chat Flutter project .
+A Group chat Flutter project .
 
-This is a chat demo application using (flutter and firebase)
-- it using google sign in and it has a two functions (one to one chat & group chat)
+This is a chat demo application using (flutter and firebase), it contain:
+- Google sign 
+- One to one chat
+- Group chat
 
 <table style="width:100%">
 
