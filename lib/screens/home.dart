@@ -91,6 +91,8 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future onSelectNotification(String payload) async {
+    print('--onSelectNotification-- payload: $payload ');
+
     if (payload != null) {
       debugPrint('notification payload: ' + payload);
     }
@@ -102,6 +104,8 @@ class HomeScreenState extends State<HomeScreen> {
 
   Future onDidReceiveLocalNotification(
       int id, String title, String body, String payload) async {
+        print('--onDidReceiveLocalNotification-- payload: $payload ');
+
     // display a dialog with the notification details, tap ok to go to another page
     showDialog(
       context: context,
@@ -380,7 +384,6 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
   ThreadModel threadData;
   bool isGroup = true;
   UserModel userModel;
-  String name = '';
 
   @override
   void afterFirstLayout(BuildContext context) {
@@ -397,9 +400,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
       userRef.get().then((snap) {
         if (mounted) {
           setState(() {
-            // threadData.name = snap.data['nickname'];
-            name = snap.data['nickname'];
-
+            threadData.name = snap.data['nickname'];
             threadData.photoUrl = snap.data['photoUrl'];
             isGroup = false;
             userModel = UserModel.fromJson(snap.data);

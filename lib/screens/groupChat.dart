@@ -160,8 +160,12 @@ class ChatScreenState extends State<ChatScreen> {
             'content': content,
             'type': type,
             'nameFrom': currentUserName,
-            'photoFrom': currentUserPhoto
+            'photoFrom': currentUserPhoto,
+            'data': {
+
+            }
           },
+         
         );
       });
 
