@@ -1,16 +1,34 @@
 # group chat demo
 
-A new Flutter project.
+A Grroup chat Flutter project .
 
-## Getting Started
+This is a chat demo application using (flutter and firebase)
+- it using google sign in and it has a two functions (one to one chat & group chat)
 
-This project is a starting point for a Flutter application.
+<table style="width:100%">
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+  <tr>
+    <td>
+      <img src="https://user-images.githubusercontent.com/44163927/73730016-c19c1e80-473e-11ea-8175-bd0ecaf99c4f.png" width="300" />
+    </td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/44163927/73730106-f314ea00-473e-11ea-83a3-ba2d3dd2e5f9.png" width="300" />
+    </td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/44163927/73732368-b9de7900-4742-11ea-9655-ff3991e1110a.png" width="300" />
+    </td>
+  </tr>
+  
+  <tr>
+    <td>
+      <img src="https://user-images.githubusercontent.com/44163927/73730189-0fb12200-473f-11ea-96ef-c59af66b73b1.png" width="300" />
+    </td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/44163927/73730250-28213c80-473f-11ea-8c78-11a3b535eddb.png" width="300" />
+    </td>
+    <td>
+      <img src="https://user-images.githubusercontent.com/44163927/73732936-bac3da80-4743-11ea-82da-3f68bfb922b9.png" width="300" />
+    </td>
+  </tr>
+ 
+</table>
