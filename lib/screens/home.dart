@@ -14,7 +14,6 @@ import '../utils/colors.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../test.dart';
 import './screens.dart';
 import '../widgets/imageAvatar.dart';
 import '../models/menuChoice.dart';
@@ -95,10 +94,10 @@ class HomeScreenState extends State<HomeScreen> {
     if (payload != null) {
       debugPrint('notification payload: ' + payload);
     }
-    await Navigator.push(
-      context,
-      new MaterialPageRoute(builder: (context) => TestScreen(payload)),
-    );
+    // await Navigator.push(
+    //   context,
+    //   new MaterialPageRoute(builder: (context) => HomeScreen(currentUserId: currentUserId)),
+    // );
   }
 
   Future onDidReceiveLocalNotification(
@@ -115,12 +114,13 @@ class HomeScreenState extends State<HomeScreen> {
             child: new Text('Ok'),
             onPressed: () async {
               Navigator.of(context, rootNavigator: true).pop();
-              await Navigator.push(
-                context,
-                new MaterialPageRoute(
-                  builder: (context) => TestScreen(payload),
-                ),
-              );
+              // await Navigator.pushReplacement(
+              //   context,
+              //   new MaterialPageRoute(
+              //     builder: (context) => HomeScreen(currentUserId: currentUserId,),
+                  
+              //   ),
+              // );
             },
           )
         ],
