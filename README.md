@@ -3,9 +3,9 @@
 A Group chat Flutter project .
 
 This is a chat demo application using (flutter and firebase), it contain:
-- Google sign 
 - One to one chat
 - Group chat
+- using (Google sign in - cloud firestore - Firebase Functions - Cloud messaging)
 
 <table style="width:100%">
 
