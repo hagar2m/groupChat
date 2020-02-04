@@ -118,7 +118,7 @@ class HomeScreenState extends State<HomeScreen> {
               //   context,
               //   new MaterialPageRoute(
               //     builder: (context) => HomeScreen(currentUserId: currentUserId,),
-                  
+
               //   ),
               // );
             },
@@ -324,14 +324,16 @@ class HomeScreenState extends State<HomeScreen> {
                       return t.data['users']
                           .any((u) => u.documentID == currentUserId);
                     }).toList();
+
                     return ListView.builder(
-                      padding: EdgeInsets.all(10.0),
-                      itemCount: threads.length,
-                      itemBuilder: (context, index) => ThreadItem(
-                        thread: threads[index], 
-                        currentUserId: currentUserId
-                      ),
-                    );
+                        padding: EdgeInsets.all(10.0),
+                        itemCount: threads.length,
+                        itemBuilder: (context, index) {
+                          return ThreadItem(
+                              key: UniqueKey(),
+                              thread: threads[index],
+                              currentUserId: currentUserId);
+                        });
                   }
                 },
               ),
@@ -368,37 +370,41 @@ class ThreadItem extends StatefulWidget {
   final DocumentSnapshot thread;
   final String currentUserId;
 
-  ThreadItem({this.thread, this.currentUserId});
+  ThreadItem({this.thread, this.currentUserId, Key key}) : super(key: key);
 
   @override
   _ThreadItemState createState() => _ThreadItemState();
 }
 
 class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
-  // DocumentSnapshot userSnap;
   ThreadModel threadData;
   bool isGroup = true;
   UserModel userModel;
+  String name = '';
 
   @override
   void afterFirstLayout(BuildContext context) {
-
-    setState(() {
-      threadData = ThreadModel.fromJson(widget.thread.data);
-      // threadData.toString();
-      // print('-----------------');
-    });
-
+    if (mounted) {
+      setState(() {
+        threadData = ThreadModel.fromJson(widget.thread.data);
+        // threadData.toString();
+        // print('-----------------');
+      });
+    }
     if ((widget.thread.data["users"] as List).length == 2) {
       DocumentReference userRef = (widget.thread.data["users"] as List)
           .firstWhere((u) => u.documentID != widget.currentUserId);
       userRef.get().then((snap) {
-        setState(() {
-          threadData.name = snap.data['nickname'];
-          threadData.photoUrl = snap.data['photoUrl'];
-          isGroup = false;
-          userModel  = UserModel.fromJson(snap.data);
-        });
+        if (mounted) {
+          setState(() {
+            // threadData.name = snap.data['nickname'];
+            name = snap.data['nickname'];
+
+            threadData.photoUrl = snap.data['photoUrl'];
+            isGroup = false;
+            userModel = UserModel.fromJson(snap.data);
+          });
+        }
       });
     }
   }
@@ -410,7 +416,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
       child: FlatButton(
         child: Row(
           children: <Widget>[
-            ImageAvatar(imgUrl: threadData != null ? threadData.photoUrl : ""),
+            ImageAvatar(imgUrl: threadData != null ? threadData.photoUrl : groupPhoto),
             Flexible(
               child: Container(
                 child: Column(
@@ -447,14 +453,13 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
     );
   }
 
-  void _onPressed () {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => GroupChat(
-                threadId: threadData.id, 
+  void _onPressed() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => GroupChat(
+                threadId: threadData.id,
                 threadName: threadData.name,
-                userModel: userModel
-            )));
+                userModel: userModel)));
   }
 }
