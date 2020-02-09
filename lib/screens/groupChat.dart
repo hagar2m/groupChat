@@ -697,8 +697,8 @@ class ChatScreenState extends State<ChatScreen> {
                   return ListView.builder(
                     padding: EdgeInsets.all(10.0),
                     itemBuilder: (context, index) =>
-                        buildItem(index, snapshot.data.documents[index]),
-                    itemCount: snapshot.data.documents.length,
+                        buildItem(index, listMessage[index]),
+                    itemCount: listMessage.length,
                     reverse: true,
                     controller: listScrollController,
                   );

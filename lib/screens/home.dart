@@ -80,46 +80,49 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void configLocalNotification() {
-    var initializationSettingsAndroid =
-        new AndroidInitializationSettings('app_icon');
-    var initializationSettingsIOS = new IOSInitializationSettings(
-        onDidReceiveLocalNotification: onDidReceiveLocalNotification);
-    var initializationSettings = new InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
+    var initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    var initializationSettingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification: onDidReceiveLocalNotification
+    );
+    var initializationSettings = InitializationSettings(
+      initializationSettingsAndroid, initializationSettingsIOS
+    );
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
+      onSelectNotification: onSelectNotification
+    );
   }
 
   Future onSelectNotification(String message) async {
-    // print('--onSelectNotification-- payload: $payload ');
-
     if (message != null) {
-
-      print(' ===================================== object ========');
-      Map<String, dynamic> data =  json.decode(message)['data'] ;
+      Map<String, dynamic> data = json.decode(message)['data'];
       // debugPrint('notification payload: ' + payload);
-      UserModel userModel = UserModel(id: data['idTo'], nickname: data['threadname']);
+      UserModel userModel = UserModel(
+        id: data['idTo'], 
+        nickname: data['threadname']
+      );
       await Navigator.push(
-      context,
-      new MaterialPageRoute(builder: (context) => 
-      GroupChat(threadId: data['threadId'],
-       threadName: data['threadname'],
-        userModel: userModel),
-    ));
+        context,
+        MaterialPageRoute(
+          builder: (context) => GroupChat(
+            threadId: data['threadId'],
+            threadName: data['threadname'],
+            userModel: userModel
+          ),
+        )
+      );
     }
-    
   }
 
-  Future onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) async {
-        print('--onDidReceiveLocalNotification-- payload: $payload ');
+  Future onDidReceiveLocalNotification(int id, String title, String body, String payload) async {
+    print('--onDidReceiveLocalNotification-- payload: $payload');
+    print('--onDidReceiveLocalNotification-- body: $body');
 
     // display a dialog with the notification details, tap ok to go to another page
     showDialog(
       context: context,
       builder: (BuildContext context) => new CupertinoAlertDialog(
         title: new Text(title),
-        content: new Text(body),
+        content: new Text(payload), //body
         actions: [
           CupertinoDialogAction(
             isDefaultAction: true,
@@ -167,8 +170,11 @@ class HomeScreenState extends State<HomeScreen> {
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(0, message['notification']['title'].toString(),
-        message['notification']['body'].toString(), platformChannelSpecifics,
+    await flutterLocalNotificationsPlugin.show(
+        0,
+        message['notification']['title'].toString(),
+        message['notification']['body'].toString(),
+        platformChannelSpecifics,
         payload: json.encode(message));
   }
 
@@ -421,7 +427,9 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
       child: FlatButton(
         child: Row(
           children: <Widget>[
-            threadData != null ? ImageAvatar(imgUrl: threadData.photoUrl) : SizedBox(),
+            threadData != null
+                ? ImageAvatar(imgUrl: threadData.photoUrl)
+                : SizedBox(),
             Flexible(
               child: Container(
                 child: Column(
