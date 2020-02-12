@@ -4,7 +4,7 @@ class StickerImage extends StatelessWidget {
   final String name;
   final Function onSend;
 
-  StickerImage(this.name, this.onSend);
+  StickerImage({this.name, this.onSend});
 
   @override
   Widget build(BuildContext context) {
