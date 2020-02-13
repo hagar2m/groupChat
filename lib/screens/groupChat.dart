@@ -386,7 +386,7 @@ class ChatScreenState extends State<ChatScreen> {
                 } else {
                   listMessage = snapshot.data.documents;
                   return ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: EdgeInsets.symmetric(horizontal: 13.0, vertical: 8.0),
                     itemBuilder: (context, index) => MessageItem(
                         index: index,
                         document: listMessage[index],

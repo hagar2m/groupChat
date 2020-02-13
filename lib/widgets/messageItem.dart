@@ -132,21 +132,23 @@ class _MessageItemState extends State<MessageItem> {
   }
 
   void seekToPlayer(int milliSecs) async {
-    String result = await widget.flutterSound.seekToPlayer(milliSecs);
-    print('seekToPlayer: $result');
+    if (widget.flutterSound.audioState == t_AUDIO_STATE.IS_PLAYING ) {
+      await widget.flutterSound.seekToPlayer(milliSecs);
+      // print('seekToPlayer: $result');
+    }
   }
 
   onPausePlayerPressed() {
     return widget.flutterSound.audioState == t_AUDIO_STATE.IS_PLAYING ||
             widget.flutterSound.audioState == t_AUDIO_STATE.IS_PAUSED
-        ? pausePlayer
+        ? pausePlayer()
         : null;
   }
 
   onStopPlayerPressed() {
     return widget.flutterSound.audioState == t_AUDIO_STATE.IS_PLAYING ||
             widget.flutterSound.audioState == t_AUDIO_STATE.IS_PAUSED
-        ? stopPlayer
+        ? stopPlayer()
         : null;
   }
 
@@ -154,13 +156,13 @@ class _MessageItemState extends State<MessageItem> {
     if (voiceUrl == null) return null;
     return widget.flutterSound.audioState == t_AUDIO_STATE.IS_STOPPED
         ? startPlayer(voiceUrl)
-        : null;
+        : pausePlayer();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: _islastIndex(widget.index) ? 20.0 : 10.0),
+      margin: EdgeInsets.only(bottom: _islastIndex(widget.index) ? 25.0 : 10.0),
       child: _buildItem(),
     );
   }
@@ -175,13 +177,7 @@ class _MessageItemState extends State<MessageItem> {
               ? _textWidget(color: textColor)
               : widget.document['type'] == 1
                   // Image
-                  ? Container(
-                      // margin: EdgeInsets.only(
-                      //   bottom: isLastMessageRight(widget.index) ? 20.0 : 10.0,
-                      //   right: 10.0
-                      // ),
-                      child: _imageWidget(),
-                    )
+                  ? _imageWidget()
                   // Sticker
                   : widget.document['type'] == 3
                       ? _voiceContainer(widget.document['content'])
@@ -197,7 +193,7 @@ class _MessageItemState extends State<MessageItem> {
             children: <Widget>[
               isLastMessageLeft(widget.index)
                   ? _userPhoto()
-                  : Container(width: 35.0),
+                  : Container(width: 43.0), // 35 width of photo + 8 of margin
 
               //  show text or image
               _showFriendContent(),
@@ -206,15 +202,16 @@ class _MessageItemState extends State<MessageItem> {
           // Time
           isLastMessageLeft(widget.index)
               ? Container(
-                  // margin: EdgeInsets.only(left: 50.0, top: 5.0, bottom: 5.0),
+                  margin: EdgeInsets.only(left: 43, top: 3),
                   child: Row(
                   children: <Widget>[
                     Text(
                       '${widget.document['nameFrom']}',
                       style: TextStyle(
-                          color: textColor,
-                          fontSize: 12.0,
-                          fontStyle: FontStyle.italic),
+                        color: textColor,
+                        fontSize: 12.0,
+                        fontStyle: FontStyle.italic
+                      ),
                     ),
                     SizedBox(
                       width: 15.0,
@@ -237,17 +234,22 @@ class _MessageItemState extends State<MessageItem> {
     }
   }
 
-  _textWidget({Color color}) {
+  _textWidget({ Color color }) {
     return Flexible(
       child: Container(
+        width: widget.document['content'].length > 40 ? 
+        MediaQuery.of(context).size.width * 0.7
+         : null,
+        padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
+        // margin: edg,
         child: Text(
           '${widget.document['content']} ${widget.index}',
           style: TextStyle(color: Colors.white),
         ),
-        padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
         decoration: BoxDecoration(
-            color: color ?? primaryColor,
-            borderRadius: BorderRadius.circular(8.0)),
+          color: color ?? primaryColor,
+          borderRadius: BorderRadius.circular(8.0)
+        ),
       ),
     );
   }
@@ -262,9 +264,8 @@ class _MessageItemState extends State<MessageItem> {
               strokeWidth: 1.0,
               valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
             ),
-            width: 35.0,
-            height: 35.0,
-            padding: EdgeInsets.all(10.0),
+            // width: 35.0,
+            // height: 35.0,
           ),
           imageUrl: widget.document['photoFrom'],
           width: 35.0,
@@ -285,6 +286,7 @@ class _MessageItemState extends State<MessageItem> {
       child: Material(
         child: CachedNetworkImage(
           placeholder: (context, url) => Container(
+            alignment: Alignment.center,
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
             ),
@@ -292,9 +294,7 @@ class _MessageItemState extends State<MessageItem> {
             height: _size,
             decoration: BoxDecoration(
               color: textColor,
-              borderRadius: BorderRadius.all(
-                Radius.circular(8.0),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(8.0)),
             ),
           ),
           errorWidget: (context, url, error) => Material(
@@ -359,7 +359,7 @@ class _MessageItemState extends State<MessageItem> {
 
   _voiceContainer(String voiceUrl) {
     return Container(
-      // height: 50.0,
+      // width: MediaQuery.of(context).size.width * 0.55,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
         color: textColor,
@@ -371,19 +371,34 @@ class _MessageItemState extends State<MessageItem> {
                   widget.flutterSound.audioState == t_AUDIO_STATE.IS_PLAYING
                       ? Icons.stop
                       : Icons.play_arrow,
-                  color: Colors.white),
+                  color: Colors.white,
+                  size: 35.0,
+                  ),
               onPressed: () => onStartPlayerPressed(voiceUrl)),
+       
           Container(
-            width: MediaQuery.of(context).size.width * 0.45,
-            child: Slider(
-                value: sliderCurrentPosition,
-                inactiveColor: thirdColor,
-                min: 0.0,
-                max: maxDuration,
-                onChanged: (double value) async {
-                  await widget.flutterSound.seekToPlayer(value.toInt());
-                },
-                divisions: maxDuration.toInt()),
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: thirdColor,
+                inactiveTrackColor: Colors.grey,
+                thumbColor: thirdColor,
+                thumbShape: RoundSliderThumbShape(
+                  enabledThumbRadius: 7.0,
+                ),
+              ), 
+              child: Slider(
+              value: sliderCurrentPosition,
+              // inactiveColor: thirdColor,
+              // activeColor: primaryColor,
+              min: 0.0,
+              max: maxDuration,
+              onChanged: (double value) => seekToPlayer(value.toInt()),
+              divisions: maxDuration.toInt()
+            ),
+            )
+            
+            
+            
           ),
         ],
       ),
