@@ -46,15 +46,6 @@ class _MessageItemState extends State<MessageItem> {
     }
   }
 
-  // bool isLastMessageRight(int index) {
-  //   if ((index > 0 &&
-  //           widget.listMessage != null &&
-  //           widget.listMessage[index - 1]['idFrom'] != widget.currentUserId) || index == 0) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
   bool _islastIndex(int index) {
     if (index > 0 &&
         (widget.listMessage[index - 1]['idFrom'] !=
@@ -65,8 +56,6 @@ class _MessageItemState extends State<MessageItem> {
   }
 
   void startPlayer(String recordUrl) async {
-    print('startPlayer');
-
     try {
       String path =
           await widget.flutterSound.startPlayer(recordUrl); // From file
@@ -132,7 +121,7 @@ class _MessageItemState extends State<MessageItem> {
   }
 
   void seekToPlayer(int milliSecs) async {
-    if (widget.flutterSound.audioState == t_AUDIO_STATE.IS_PLAYING ) {
+    if (widget.flutterSound.audioState == t_AUDIO_STATE.IS_PLAYING) {
       await widget.flutterSound.seekToPlayer(milliSecs);
       // print('seekToPlayer: $result');
     }
@@ -162,7 +151,7 @@ class _MessageItemState extends State<MessageItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: _islastIndex(widget.index) ? 25.0 : 10.0),
+      margin: EdgeInsets.only(bottom: _islastIndex(widget.index) ? 25.0 : 15.0),
       child: _buildItem(),
     );
   }
@@ -177,7 +166,7 @@ class _MessageItemState extends State<MessageItem> {
               ? _textWidget(color: textColor)
               : widget.document['type'] == 1
                   // Image
-                  ? _imageWidget()
+                  ? _imagesWidget()
                   // Sticker
                   : widget.document['type'] == 3
                       ? _voiceContainer(widget.document['content'])
@@ -204,29 +193,29 @@ class _MessageItemState extends State<MessageItem> {
               ? Container(
                   margin: EdgeInsets.only(left: 43, top: 3),
                   child: Row(
-                  children: <Widget>[
-                    Text(
-                      '${widget.document['nameFrom']}',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 12.0,
-                        fontStyle: FontStyle.italic
+                    children: <Widget>[
+                      Text(
+                        '${widget.document['nameFrom']}',
+                        style: TextStyle(
+                            color: textColor,
+                            fontSize: 12.0,
+                            fontStyle: FontStyle.italic),
                       ),
-                    ),
-                    SizedBox(
-                      width: 15.0,
-                    ),
-                    Text(
-                      DateFormat('dd MMM kk:mm').format(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              int.parse(widget.document['timestamp']))),
-                      style: TextStyle(
+                      SizedBox(
+                        width: 15.0,
+                      ),
+                      Text(
+                        DateFormat('dd MMM kk:mm').format(
+                            DateTime.fromMillisecondsSinceEpoch(
+                                int.parse(widget.document['timestamp']))),
+                        style: TextStyle(
                           color: textColor,
                           fontSize: 12.0,
-                          fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ))
+                          fontStyle: FontStyle.italic
+                        ),
+                      ),
+                    ],
+                  ))
               : Container()
         ],
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,22 +223,21 @@ class _MessageItemState extends State<MessageItem> {
     }
   }
 
-  _textWidget({ Color color }) {
+  _textWidget({Color color}) {
     return Flexible(
       child: Container(
-        width: widget.document['content'].length > 40 ? 
-        MediaQuery.of(context).size.width * 0.7
-         : null,
+        width: widget.document['content'].length > 40
+            ? MediaQuery.of(context).size.width * 0.7
+            : null,
         padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
         // margin: edg,
         child: Text(
-          '${widget.document['content']} ${widget.index}',
+          '${widget.document['content']}',
           style: TextStyle(color: Colors.white),
         ),
         decoration: BoxDecoration(
-          color: color ?? primaryColor,
-          borderRadius: BorderRadius.circular(8.0)
-        ),
+            color: color ?? primaryColor,
+            borderRadius: BorderRadius.circular(8.0)),
       ),
     );
   }
@@ -280,51 +268,89 @@ class _MessageItemState extends State<MessageItem> {
     );
   }
 
-  _imageWidget() {
-    double _size = 170.0;
-    return FlatButton(
-      child: Material(
-        child: CachedNetworkImage(
-          placeholder: (context, url) => Container(
-            alignment: Alignment.center,
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-            ),
-            width: _size,
-            height: _size,
-            decoration: BoxDecoration(
-              color: textColor,
-              borderRadius: BorderRadius.all(Radius.circular(8.0)),
-            ),
-          ),
-          errorWidget: (context, url, error) => Material(
-            child: Image.asset(
-              'images/img_not_available.jpeg',
-              width: _size,
-              height: _size,
-              fit: BoxFit.cover,
-            ),
-            borderRadius: BorderRadius.all(
-              Radius.circular(8.0),
-            ),
-            clipBehavior: Clip.hardEdge,
-          ),
-          imageUrl: widget.document['content'],
-          width: _size,
-          height: _size,
-          fit: BoxFit.cover,
+  _imagesWidget() {
+    double _containerSize = 100.0;
+    List images = widget.document['images'];
+    double _imgSize = _containerSize * 0.9;
+
+    return Container(
+      color: Colors.grey.shade300,
+      width: 200.0,
+      height: images.length == 2 ? 100 : 200,
+      child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: images.length == 1 ? 1 : 2,
         ),
-        borderRadius: BorderRadius.all(Radius.circular(8.0)),
-        clipBehavior: Clip.hardEdge,
+        itemCount: images.length > 4 ? 4 : images.length,
+        itemBuilder: (BuildContext context, int index) {
+          if (images.length > 4 && index == 3) {
+            return InkWell(
+              onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => FullPhoto(images: images, index: index)
+              )),
+              child: Container(
+                height: _imgSize,
+                width: _imgSize,
+                margin: EdgeInsets.all(5.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade600,
+                  borderRadius: BorderRadius.circular(5.0)
+                ),
+                child: Center(
+                  child: Text(
+                    '+${images.length - 3}',
+                    style: TextStyle(color: Colors.white, fontSize: 25.0),
+                  ),
+                ),
+              ),
+            );
+          } else if (images.length > 4 && index > 3) {
+            return SizedBox();
+          } 
+          return _buildImgItem(index: index, images: images, size: _imgSize );
+        },
       ),
-      onPressed: () {
-        Navigator.push(
-            context,
+    );
+  }
+
+  _buildImgItem({ double size, List images, int index }) {
+    return InkWell(
+        onTap: () {
+          Navigator.of(context).push(
             MaterialPageRoute(
                 builder: (context) =>
-                    FullPhoto(url: widget.document['content'])));
-      },
-      padding: EdgeInsets.all(0),
+                    FullPhoto(images: images, index: index))
+          );
+        },
+        child: Container(
+        height: size,
+        width: size,
+        padding: EdgeInsets.all(5.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(5.0),
+          border: Border.all(color: Colors.grey.shade300, width: 3)
+        ),
+        child: CachedNetworkImage(
+          imageUrl: images[index],
+          fit: BoxFit.fill,
+          placeholder: (_, _url) => Container(
+            child: Center(
+                child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+            )),
+          ),
+          errorWidget: (_, url, error) => Container(
+            child: Image.asset(
+              'images/img_not_available.jpeg',
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -335,7 +361,7 @@ class _MessageItemState extends State<MessageItem> {
       return _textWidget(color: primaryColor);
     } else if (widget.document['type'] == 1) {
       //img
-      return _imageWidget();
+      return _imagesWidget();
     } else if (widget.document['type'] == 2) {
       // stickers
       return _stickerWidget();
@@ -368,38 +394,32 @@ class _MessageItemState extends State<MessageItem> {
         children: <Widget>[
           IconButton(
               icon: Icon(
-                  widget.flutterSound.audioState == t_AUDIO_STATE.IS_PLAYING
-                      ? Icons.stop
-                      : Icons.play_arrow,
-                  color: Colors.white,
-                  size: 35.0,
-                  ),
+                widget.flutterSound.audioState == t_AUDIO_STATE.IS_PLAYING
+                    ? Icons.stop
+                    : Icons.play_arrow,
+                color: Colors.white,
+                size: 35.0,
+              ),
               onPressed: () => onStartPlayerPressed(voiceUrl)),
-       
           Container(
-            child: SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                activeTrackColor: thirdColor,
-                inactiveTrackColor: Colors.grey,
-                thumbColor: thirdColor,
-                thumbShape: RoundSliderThumbShape(
-                  enabledThumbRadius: 7.0,
-                ),
-              ), 
-              child: Slider(
-              value: sliderCurrentPosition,
-              // inactiveColor: thirdColor,
-              // activeColor: primaryColor,
-              min: 0.0,
-              max: maxDuration,
-              onChanged: (double value) => seekToPlayer(value.toInt()),
-              divisions: maxDuration.toInt()
+              child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: thirdColor,
+              inactiveTrackColor: Colors.grey,
+              thumbColor: thirdColor,
+              thumbShape: RoundSliderThumbShape(
+                enabledThumbRadius: 7.0,
+              ),
             ),
-            )
-            
-            
-            
-          ),
+            child: Slider(
+                value: sliderCurrentPosition,
+                // inactiveColor: thirdColor,
+                // activeColor: primaryColor,
+                min: 0.0,
+                max: maxDuration,
+                onChanged: (double value) => seekToPlayer(value.toInt()),
+                divisions: maxDuration.toInt()),
+          )),
         ],
       ),
     );

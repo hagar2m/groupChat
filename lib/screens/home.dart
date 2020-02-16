@@ -95,7 +95,6 @@ class HomeScreenState extends State<HomeScreen> {
   Future onSelectNotification(String message) async {
     if (message != null) {
       Map<String, dynamic> data = json.decode(message)['data'];
-      // debugPrint('notification payload: ' + payload);
       UserModel userModel = UserModel(
         id: data['idTo'], 
         nickname: data['threadname']
@@ -114,9 +113,6 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future onDidReceiveLocalNotification(int id, String title, String body, String payload) async {
-    print('--onDidReceiveLocalNotification-- payload: $payload');
-    print('--onDidReceiveLocalNotification-- body: $body');
-
     // display a dialog with the notification details, tap ok to go to another page
     showDialog(
       context: context,

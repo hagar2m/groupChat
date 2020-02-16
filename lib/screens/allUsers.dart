@@ -36,7 +36,6 @@ class AllUsersState extends State<AllUsers> {
   }
 
   void finishChoosing(UserModel selectedUser) async {
-    //   // type: 0 = text, 1 = image, 2 = sticker
     var threadId;
     String _threadName = selectedUser.nickname;
      if (currentUserId.hashCode <= selectedUser.id.hashCode) {
@@ -53,8 +52,6 @@ class AllUsersState extends State<AllUsers> {
         Firestore.instance.collection('users').document(currentUserId),
         Firestore.instance.collection('users').document(selectedUser.id)
       ],
-      // 'lastMessage': '',
-      // 'lastMessageTime': DateTime.now().millisecondsSinceEpoch.toString()
     });
 
     Navigator.push(

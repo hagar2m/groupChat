@@ -46,7 +46,6 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   }
 
   void createGroup() async {
-    //   // type: 0 = text, 1 = image, 2 = sticker
     _selecteItems.add(curentUserModel);
 
     var threadId =
@@ -175,15 +174,14 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
               },
             ),
           ),
-
           // Loading
           Positioned(
             child: isLoading
                 ? Container(
                     child: Center(
                       child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(primaryColor)),
+                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor)
+                      ),
                     ),
                     color: Colors.white.withOpacity(0.8),
                   )
