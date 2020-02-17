@@ -37,8 +37,8 @@ This is a chat demo application using (flutter and firebase), it contain:
   </tr>
   
    <tr>
-    <td>
-      <img src="https://user-images.githubusercontent.com/44163927/74659995-f1670f80-519d-11ea-8f26-d506bafb75cd.png" width="300" />
+     <td>
+      <img src="https://user-images.githubusercontent.com/44163927/74660572-07c19b00-519f-11ea-9c48-c9baec1453f6.png" width="300" />
     </td>
   </tr>
 
