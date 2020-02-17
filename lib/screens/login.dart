@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +10,7 @@ import '../utils/colors.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({Key key, this.title}) : super(key: key);
-
   final String title;
-
   @override
   LoginScreenState createState() => LoginScreenState();
 }
@@ -47,7 +44,6 @@ class LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => HomeScreen(currentUserId: prefs.getString('id'))),
       );
     }
-
     setState(() {
       isLoading = false;
     });
@@ -65,8 +61,8 @@ class LoginScreenState extends State<LoginScreen> {
       Fluttertoast.showToast(msg: "Sign in fail");
       setState(() {
         isLoading = false;
-        return;
       });
+      return;
     }
     GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
@@ -78,6 +74,7 @@ class LoginScreenState extends State<LoginScreen> {
     FirebaseUser firebaseUser = (await firebaseAuth.signInWithCredential(credential)).user;
 
     if (firebaseUser != null) {
+
       // Check is already sign up
       final QuerySnapshot result =
           await Firestore.instance.collection('users').where('id', isEqualTo: firebaseUser.uid).getDocuments();
@@ -141,7 +138,6 @@ class LoginScreenState extends State<LoginScreen> {
               textColor: Colors.white,
               padding: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0)),
         ),
-
         // Loading
         Positioned(
           child: isLoading

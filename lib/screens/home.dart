@@ -2,21 +2,18 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:after_layout/after_layout.dart';
-import 'package:chatdemo/models/thread.dart';
-import 'package:chatdemo/models/userModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../utils/colors.dart';
-
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import './screens.dart';
 import '../widgets/imageAvatar.dart';
-import '../models/menuChoice.dart';
+import 'package:chatdemo/models/models.dart';
 
 List<Choice> choices = const <Choice>[
   const Choice(title: 'Settings', icon: Icons.settings),
@@ -37,12 +34,10 @@ class HomeScreenState extends State<HomeScreen> {
   HomeScreenState({Key key, @required this.currentUserId});
 
   final String currentUserId;
-
   final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       new FlutterLocalNotificationsPlugin();
   final GoogleSignIn googleSignIn = GoogleSignIn();
-
   bool isLoading = false;
 
   @override
@@ -125,13 +120,12 @@ class HomeScreenState extends State<HomeScreen> {
             child: new Text('Ok'),
             onPressed: () async {
               Navigator.of(context, rootNavigator: true).pop();
-              // await Navigator.pushReplacement(
-              //   context,
-              //   new MaterialPageRoute(
-              //     builder: (context) => HomeScreen(currentUserId: currentUserId,),
-
-              //   ),
-              // );
+              await Navigator.pushReplacement(
+                context,
+                new MaterialPageRoute(
+                  builder: (context) => HomeScreen(currentUserId: currentUserId,),
+                ),
+              );
             },
           )
         ],
