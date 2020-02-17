@@ -5,7 +5,10 @@ A Group chat Flutter project .
 This is a chat demo application using (flutter and firebase), it contain:
 - One to one chat
 - Group chat
-- using (Google sign in - cloud firestore - Firebase Functions - Cloud messaging)
+- Record voice
+- Pick multiple images
+- Using (Google sign in - cloud firestore - Firebase Functions - Cloud messaging)
+
 
 <table style="width:100%">
 
@@ -32,5 +35,11 @@ This is a chat demo application using (flutter and firebase), it contain:
       <img src="https://user-images.githubusercontent.com/44163927/73732936-bac3da80-4743-11ea-82da-3f68bfb922b9.png" width="300" />
     </td>
   </tr>
- 
+  
+   <tr>
+    <td>
+      <img src="https://user-images.githubusercontent.com/44163927/74659995-f1670f80-519d-11ea-8f26-d506bafb75cd.png" width="300" />
+    </td>
+  </tr>
+
 </table>
