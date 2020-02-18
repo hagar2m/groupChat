@@ -9,6 +9,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 
 import '../utils/colors.dart';
 import '../models/userModel.dart';
+import '../widgets/widgets.dart';
 
 class GroupCreateScreen extends StatefulWidget {
   static String routeName = '/GroupCreateScreen';
@@ -23,7 +24,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
 
   bool isLoading = false;
   String currentUserId = '';
-  List<UserModel> _selecteItems = List();
+  List<UserModel> _selectedUsers = List();
   UserModel curentUserModel;
 
   @override
@@ -46,7 +47,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   }
 
   void createGroup() async {
-    _selecteItems.add(curentUserModel);
+    _selectedUsers.add(curentUserModel);
 
     var threadId =
         currentUserId + DateTime.now().millisecondsSinceEpoch.toString();
@@ -57,7 +58,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
       'name': textEditingController.text,
       'photoUrl': groupPhoto,
       'id': threadId,
-      'users': _selecteItems
+      'users': _selectedUsers
           .map((item) =>
               Firestore.instance.collection('users').document(item.id))
           .toList(),
@@ -73,7 +74,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   }
 
   void _clearState() {
-    _selecteItems.clear();
+    _selectedUsers.clear();
     textEditingController.clear();
   }
 
@@ -125,69 +126,52 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
         ),
         centerTitle: true,
       ),
-      body: Stack(
-        children: <Widget>[
-          // List
-          Container(
-            child: StreamBuilder(
-              stream: Firestore.instance.collection('users').snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                    ),
-                  );
-                } else {
-                  return ListView.builder(
-                    padding: EdgeInsets.all(10.0),
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (context, index) {
-                      UserModel user = UserModel.fromJson(
-                          snapshot.data.documents[index].data);
-                      if (user.id == currentUserId) {
-                        curentUserModel = user;
-                        return SizedBox();
-                      }
+      body: LoadingStack(
+        isLoading: isLoading,
+        child: StreamBuilder(
+          stream: Firestore.instance.collection('users').snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                ),
+              );
+            } else {
+              return ListView.builder(
+                padding: EdgeInsets.all(10.0),
+                itemCount: snapshot.data.documents.length,
+                itemBuilder: (context, index) {
+                  UserModel user = UserModel.fromJson(
+                      snapshot.data.documents[index].data);
+                  if (user.id == currentUserId) {
+                    curentUserModel = user;
+                    return SizedBox();
+                  }
 
-                      UserModel filteritem = _selecteItems.firstWhere(
-                          (item) => item.id == user.id,
-                          orElse: () => null);
+                  UserModel filteritem = _selectedUsers.firstWhere(
+                      (item) => item.id == user.id,
+                      orElse: () => null);
 
-                      return CheckboxListTile(
-                        value: filteritem != null,
-                        title: UserItem(user: user, onPressed: null),
-                        onChanged: (value) {
-                          setState(() {
-                            if (value == true) {
-                              _selecteItems.add(user);
-                            } else {
-                              _selecteItems
-                                  .removeWhere((item) => item.id == user.id);
-                            }
-                          });
-                        },
-                      );
+                  return CheckboxListTile(
+                    value: filteritem != null,
+                    title: UserItem(user: user, onPressed: null),
+                    onChanged: (value) {
+                      setState(() {
+                        if (value == true) {
+                          _selectedUsers.add(user);
+                        } else {
+                          _selectedUsers
+                              .removeWhere((item) => item.id == user.id);
+                        }
+                      });
                     },
                   );
-                }
-              },
-            ),
-          ),
-          // Loading
-          Positioned(
-            child: isLoading
-                ? Container(
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor)
-                      ),
-                    ),
-                    color: Colors.white.withOpacity(0.8),
-                  )
-                : Container(),
-          )
-        ],
+                },
+              );
+            }
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.arrow_forward),

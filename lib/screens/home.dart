@@ -1,19 +1,19 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:convert';
 import 'package:after_layout/after_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../utils/colors.dart';
 import './screens.dart';
-import '../widgets/imageAvatar.dart';
-import 'package:chatdemo/models/models.dart';
+import '../widgets/widgets.dart';
+import '../models/models.dart';
+import '../services/notificationSettings.dart';
 
 List<Choice> choices = const <Choice>[
   const Choice(title: 'Settings', icon: Icons.settings),
@@ -22,115 +22,37 @@ List<Choice> choices = const <Choice>[
 ];
 
 class HomeScreen extends StatefulWidget {
-  final String currentUserId;
+  // final String currentUserId;
 
-  HomeScreen({Key key, @required this.currentUserId}) : super(key: key);
+  // HomeScreen({Key key, @required this.currentUserId}) : super(key: key);
 
   @override
-  State createState() => HomeScreenState(currentUserId: currentUserId);
+  State createState() => HomeScreenState();
 }
 
 class HomeScreenState extends State<HomeScreen> {
-  HomeScreenState({Key key, @required this.currentUserId});
 
-  final String currentUserId;
-  final FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      new FlutterLocalNotificationsPlugin();
-  final GoogleSignIn googleSignIn = GoogleSignIn();
+
   bool isLoading = false;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+  String currentUserId;
 
   @override
   void initState() {
     super.initState();
-
-    registerNotification();
-    configLocalNotification();
+    setupNotification();
   }
+  void setupNotification () async {
+    var prefs = await SharedPreferences.getInstance();
+    currentUserId = prefs.getString('id');
 
-  void registerNotification() {
-    firebaseMessaging.requestNotificationPermissions();
-
-    firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
-      print('onMessage: $message');
-      showNotification(message);
-      return;
-    }, onResume: (Map<String, dynamic> message) {
-      print('onResume: $message');
-      return;
-    }, onLaunch: (Map<String, dynamic> message) {
-      print('onLaunch: $message');
-      return;
-    });
-
-    firebaseMessaging.getToken().then((token) {
-      // print('token: $token');
-      Firestore.instance
-          .collection('users')
-          .document(currentUserId)
-          .updateData({'pushToken': token});
-    }).catchError((err) {
-      Fluttertoast.showToast(msg: err.message.toString());
-    });
-  }
-
-  void configLocalNotification() {
-    var initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
-    var initializationSettingsIOS = IOSInitializationSettings(
-      onDidReceiveLocalNotification: onDidReceiveLocalNotification
+    NotificationSettings notificationSettings = NotificationSettings(
+      context: context, 
+      currentUserId: currentUserId
     );
-    var initializationSettings = InitializationSettings(
-      initializationSettingsAndroid, initializationSettingsIOS
-    );
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onSelectNotification: onSelectNotification
-    );
-  }
 
-  Future onSelectNotification(String message) async {
-    if (message != null) {
-      Map<String, dynamic> data = json.decode(message)['data'];
-      UserModel userModel = UserModel(
-        id: data['idTo'], 
-        nickname: data['threadname']
-      );
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GroupChat(
-            threadId: data['threadId'],
-            threadName: data['threadname'],
-            userModel: userModel
-          ),
-        )
-      );
-    }
-  }
-
-  Future onDidReceiveLocalNotification(int id, String title, String body, String payload) async {
-    // display a dialog with the notification details, tap ok to go to another page
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => new CupertinoAlertDialog(
-        title: new Text(title),
-        content: new Text(payload), //body
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            child: new Text('Ok'),
-            onPressed: () async {
-              Navigator.of(context, rootNavigator: true).pop();
-              await Navigator.pushReplacement(
-                context,
-                new MaterialPageRoute(
-                  builder: (context) => HomeScreen(currentUserId: currentUserId,),
-                ),
-              );
-            },
-          )
-        ],
-      ),
-    );
+    notificationSettings.registerNotification();
+    notificationSettings.configLocalNotification();
   }
 
   void onItemMenuPress(Choice choice) {
@@ -143,29 +65,6 @@ class HomeScreenState extends State<HomeScreen> {
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => Settings()));
     }
-  }
-
-  void showNotification(message) async {
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      Platform.isAndroid
-          ? 'com.dfa.flutterchatdemo'
-          : 'com.duytq.flutterchatdemo',
-      'Flutter chat demo',
-      'your channel description',
-      playSound: true,
-      enableVibration: true,
-      importance: Importance.Max,
-      priority: Priority.High,
-    );
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-        0,
-        message['notification']['title'].toString(),
-        message['notification']['body'].toString(),
-        platformChannelSpecifics,
-        payload: json.encode(message));
   }
 
   Future<bool> openDialog() async {
@@ -309,52 +208,38 @@ class HomeScreenState extends State<HomeScreen> {
       ),
       body: WillPopScope(
         onWillPop: openDialog,
-        child: Stack(
-          children: <Widget>[
-            Container(
-              child: StreamBuilder(
-                stream: Firestore.instance.collection('threads').snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                      ),
-                    );
-                  } else {
-                    // get my threads
-                    List threads = (snapshot.data.documents as List).where((t) {
-                      return t.data['users']
-                          .any((u) => u.documentID == currentUserId);
-                    }).toList();
+        child: LoadingStack(
+          isLoading: isLoading,
+          child: Container(
+            child: StreamBuilder(
+              stream: Firestore.instance.collection('threads').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                    ),
+                  );
+                } else {
+                  // get my threads
+                  List threads = (snapshot.data.documents as List).where((t) {
+                    return t.data['users']
+                        .any((u) => u.documentID == currentUserId);
+                  }).toList();
 
-                    return ListView.builder(
-                        padding: EdgeInsets.all(10.0),
-                        itemCount: threads.length,
-                        itemBuilder: (context, index) {
-                          return ThreadItem(
-                              key: UniqueKey(),
-                              thread: threads[index],
-                              currentUserId: currentUserId);
-                        });
-                  }
-                },
-              ),
+                  return ListView.builder(
+                      padding: EdgeInsets.all(10.0),
+                      itemCount: threads.length,
+                      itemBuilder: (context, index) {
+                        return ThreadItem(
+                            key: UniqueKey(),
+                            thread: threads[index],
+                            currentUserId: currentUserId);
+                      });
+                }
+              },
             ),
-            // Loading
-            Positioned(
-              child: isLoading
-                  ? Container(
-                      child: Center(
-                        child: CircularProgressIndicator(
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(primaryColor)),
-                      ),
-                      color: Colors.white.withOpacity(0.8),
-                    )
-                  : SizedBox(),
-            )
-          ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -381,7 +266,6 @@ class ThreadItem extends StatefulWidget {
 
 class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
   ThreadModel threadData;
-  bool isGroup = true;
   UserModel userModel;
 
   @override
@@ -389,8 +273,6 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
     if (mounted) {
       setState(() {
         threadData = ThreadModel.fromJson(widget.thread.data);
-        // threadData.toString();
-        // print('-----------------');
       });
     }
     // get name and photo of second user
@@ -402,7 +284,6 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
           setState(() {
             threadData.name = snap.data['nickname'];
             threadData.photoUrl = snap.data['photoUrl'];
-            isGroup = false;
             userModel = UserModel.fromJson(snap.data);
           });
         }
@@ -422,6 +303,7 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
                 : SizedBox(),
             Flexible(
               child: Container(
+                margin: EdgeInsets.only(left: 20.0),
                 child: Column(
                   children: <Widget>[
                     Container(
@@ -442,7 +324,6 @@ class _ThreadItemState extends State<ThreadItem> with AfterLayoutMixin {
                     )
                   ],
                 ),
-                margin: EdgeInsets.only(left: 20.0),
               ),
             ),
           ],

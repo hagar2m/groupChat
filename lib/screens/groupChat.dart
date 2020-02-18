@@ -1,26 +1,26 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:chatdemo/models/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import '../utils/colors.dart';
 import '../widgets/widgets.dart';
+import '../models/models.dart';
+import '../services/imagesService.dart';
 
 class GroupChat extends StatelessWidget {
   final String threadId;
   final String threadName;
   final UserModel userModel;
-  GroupChat({ @required this.threadId, @required this.threadName, this.userModel });
+  GroupChat(
+      { @required this.threadId, @required this.threadName, this.userModel });
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +40,7 @@ class GroupChat extends StatelessWidget {
 class ChatScreen extends StatefulWidget {
   final String threadId;
   final UserModel userModel;
-
-  ChatScreen({ @required this.threadId, this.userModel });
+  ChatScreen({@required this.threadId, this.userModel});
 
   @override
   State createState() =>
@@ -49,23 +48,19 @@ class ChatScreen extends StatefulWidget {
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  ChatScreenState({ @required this.threadId, this.selectedUser });
+  ChatScreenState({@required this.threadId, this.selectedUser});
 
   String threadId;
   UserModel selectedUser;
   String currentUserId;
   String currentUserPhoto;
   String currentUserName;
-
   bool _isRecording = false;
   String _path;
   StreamSubscription _recorderSubscription;
   StreamSubscription _dbPeakSubscription;
-
   var listMessage;
   SharedPreferences prefs;
-
-  // File imageFile;
   bool isLoading = false;
   bool isShowSticker = false;
   String imageUrl = '';
@@ -75,7 +70,8 @@ class ChatScreenState extends State<ChatScreen> {
   final TextEditingController textEditingController = TextEditingController();
   final ScrollController listScrollController = ScrollController();
   final FocusNode focusNode = FocusNode();
-  FlutterSound flutterSound;
+  FlutterSound flutterSound = FlutterSound();
+  ImageServices imageServices;
 
   @override
   void initState() {
@@ -83,7 +79,6 @@ class ChatScreenState extends State<ChatScreen> {
     focusNode.addListener(onFocusChange);
 
     readLocal();
-    flutterSound = FlutterSound();
     initializeDateFormatting();
   }
 
@@ -108,54 +103,13 @@ class ChatScreenState extends State<ChatScreen> {
     currentUserPhoto = prefs.getString('photoUrl');
     currentUserName = prefs.getString('nickname') ?? '';
 
+    imageServices = ImageServices(
+        threadId: threadId,
+        selectedUser: selectedUser,
+        currentUserId: currentUserId,
+        currentUserName: currentUserName,
+        currentUserPhoto: currentUserPhoto);
     setState(() {});
-  }
-
-  Future getImage() async {
-    requestPermission();
-
-    List<Asset> resultList;
-    try {
-      resultList = await MultiImagePicker.pickImages(
-        maxImages: 5,
-      );
-    } on Exception catch (e) {
-      print('error: ${e.toString()}');
-      error = e.toString();
-    } catch (e) {
-      print('error  one: ${e.toString()}');
-      error = e.toString();
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    if (error == null) {
-      setState(() {
-        isLoading = true;
-        uploadFile(resultList);
-        //  error = 'No Error Dectected';
-      });
-    }
-  }
-
-  Future<void> requestPermission() async {
-    final List<PermissionGroup> iosPermissions = [
-      PermissionGroup.camera,
-      PermissionGroup.mediaLibrary,
-      PermissionGroup.photos
-    ];
-    final List<PermissionGroup> androidPermissions = [
-      PermissionGroup.camera,
-      PermissionGroup.storage
-    ];
-    if (Platform.isIOS) {
-      await PermissionHandler().requestPermissions(iosPermissions);
-    } else {
-      await PermissionHandler().requestPermissions(androidPermissions);
-    }
   }
 
   void getSticker() {
@@ -166,73 +120,25 @@ class ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Future uploadFile(List resultList) async {
-    List images = await uploadIamges(resultList);
-    onSendMessage(images, 1);
-  }
+  _onPickImages() async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
 
-  Future<List> uploadIamges(List resultList) async {
-    List _images = List();
+      List<Asset> _assestimages = await imageServices.getImages();
 
-    for (var img in resultList) {
-      ByteData byteData = await img.getByteData();
-      List<int> imageData = byteData.buffer.asUint8List();
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      StorageReference reference = FirebaseStorage.instance.ref().child(fileName);
-      StorageUploadTask uploadTask = reference.putData(imageData);
-      String url = await (await uploadTask.onComplete).ref.getDownloadURL();
-      print('DownLoad url $url');
-      _images.add(url);
-  
-    }
+      List _images = await imageServices.uploadIamges(_assestimages);
       setState(() {
         isLoading = false;
       });
-    return _images;
-  }
 
-  void onSendMessage(var content, int type) {
-    // type: 0 = text, 1 = image, 2 = sticker, 3 = record
-    if (type != 1 && content.trim() == '') {
-      Fluttertoast.showToast(msg: 'Nothing to send');
-    } else {
       textEditingController.clear();
-      String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
-      var documentReference = Firestore.instance
-          .collection('messages')
-          .document(widget.threadId)
-          .collection(widget.threadId)
-          .document(timeStamp);
-
-      Firestore.instance.runTransaction((transaction) async {
-        await transaction.set(
-          documentReference,
-          {
-            'threadId': widget.threadId,
-            'idFrom': currentUserId,
-            'idTo': selectedUser != null ? selectedUser.id : '',
-            'timestamp': timeStamp,
-            'content': type == 1 ? '' : content,
-            'images': type == 1 ? content : [],
-            'type': type,
-            'nameFrom': currentUserName,
-            'photoFrom': currentUserPhoto,
-          },
-        );
+      imageServices.onSendMessage(_images, 1);
+    } catch (e) {
+      setState(() {
+        isLoading = false;
       });
-
-      Firestore.instance
-          .collection('threads')
-          .document(widget.threadId)
-          .updateData({
-        'lastMessage': type == 0
-            ? content
-            : type == 1 ? 'photo' : type == 2 ? 'sticker' : 'audio',
-        'lastMessageTime': timeStamp
-        //Firestore.instance.collection('messages').document(widget.threadId).collection(widget.threadId).document(timeStamp)
-      });
-      listScrollController.animateTo(0.0,
-          duration: Duration(milliseconds: 300), curve: Curves.easeOut);
     }
   }
 
@@ -329,9 +235,8 @@ class ChatScreenState extends State<ChatScreen> {
   Widget buildSticker() {
     return Container(
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: textColor, width: 0.5)),
-        color: Colors.white
-      ),
+          border: Border(top: BorderSide(color: textColor, width: 0.5)),
+          color: Colors.white),
       padding: EdgeInsets.all(5.0),
       height: 180.0,
       child: Column(
@@ -341,15 +246,15 @@ class ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               StickerImage(
                 name: 'mimi1',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
               StickerImage(
                 name: 'mimi2',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
               StickerImage(
                 name: 'mimi3',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
             ],
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -359,15 +264,15 @@ class ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               StickerImage(
                 name: 'mimi4',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
               StickerImage(
                 name: 'mimi5',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
               StickerImage(
                 name: 'mimi6',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
             ],
           ),
@@ -376,15 +281,15 @@ class ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               StickerImage(
                 name: 'mimi7',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
               StickerImage(
                 name: 'mimi8',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
               StickerImage(
                 name: 'mimi9',
-                onSend: onSendMessage,
+                onSend: imageServices.onSendMessage,
               ),
             ],
           )
@@ -412,8 +317,7 @@ class ChatScreenState extends State<ChatScreen> {
       child: widget.threadId == ''
           ? Center(
               child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor))
-            )
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor)))
           : StreamBuilder(
               stream: Firestore.instance
                   .collection('messages')
@@ -431,14 +335,14 @@ class ChatScreenState extends State<ChatScreen> {
                 } else {
                   listMessage = snapshot.data.documents;
                   return ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 13.0, vertical: 8.0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 13.0, vertical: 8.0),
                     itemBuilder: (context, index) => MessageItem(
-                      index: index,
-                      document: listMessage[index],
-                      listMessage: listMessage,
-                      currentUserId: currentUserId,
-                      flutterSound: flutterSound
-                    ),
+                        index: index,
+                        document: listMessage[index],
+                        listMessage: listMessage,
+                        currentUserId: currentUserId,
+                        flutterSound: flutterSound),
                     itemCount: listMessage.length,
                     reverse: true,
                     controller: listScrollController,
@@ -451,19 +355,17 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget buildInput() {
     return Container(
-      width: double.infinity,
-      height: 50.0,
-      decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: textColor, width: 0.5)),
-        color: Colors.white
-      ),
-      child: Stack(
-        children: <Widget>[
-          _buildNormalInput(),
-          _isRecording ? _buildRecordingView() : SizedBox()
-        ],
-      )
-    );
+        width: double.infinity,
+        height: 50.0,
+        decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: textColor, width: 0.5)),
+            color: Colors.white),
+        child: Stack(
+          children: <Widget>[
+            _buildNormalInput(),
+            _isRecording ? _buildRecordingView() : SizedBox()
+          ],
+        ));
   }
 
   Widget _buildNormalInput() {
@@ -484,7 +386,7 @@ class ChatScreenState extends State<ChatScreen> {
           margin: EdgeInsets.symmetric(horizontal: 1.0),
           child: IconButton(
             icon: Icon(Icons.image),
-            onPressed: getImage,
+            onPressed: _onPickImages,
             color: primaryColor,
           ),
         ),
@@ -513,7 +415,8 @@ class ChatScreenState extends State<ChatScreen> {
         ),
         // Button send message
         _buildMsgBtn(
-          onPreesed: () => onSendMessage(textEditingController.text, 0),
+          onPreesed: () =>
+              imageServices.onSendMessage(textEditingController.text, 0),
         )
       ],
     );
@@ -585,7 +488,7 @@ class ChatScreenState extends State<ChatScreen> {
         print('download record File: $recordUrl');
         setState(() {
           isLoading = false;
-          onSendMessage(recordUrl, 3);
+          imageServices.onSendMessage(recordUrl, 3);
         });
       }, onError: (err) {
         setState(() {

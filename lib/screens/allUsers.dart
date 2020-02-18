@@ -38,7 +38,8 @@ class AllUsersState extends State<AllUsers> {
   void finishChoosing(UserModel selectedUser) async {
     var threadId;
     String _threadName = selectedUser.nickname;
-     if (currentUserId.hashCode <= selectedUser.id.hashCode) {
+    // create thread id //
+    if (currentUserId.hashCode <= selectedUser.id.hashCode) {
       threadId = '$currentUserId-${selectedUser.id}';
     } else {
       threadId = '${selectedUser.id}-$currentUserId';
@@ -55,14 +56,16 @@ class AllUsersState extends State<AllUsers> {
     });
 
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                GroupChat(
-                  threadId: threadId, 
-                  threadName: _threadName, 
-                  userModel: selectedUser
-                )));
+      context,
+      MaterialPageRoute(
+      builder: (context) =>
+        GroupChat(
+          threadId: threadId, 
+          threadName: _threadName, 
+          userModel: selectedUser
+        )
+      )
+    );
   }
 
   @override
@@ -75,68 +78,51 @@ class AllUsersState extends State<AllUsers> {
         ),
         centerTitle: true,
       ),
-      body: Stack(
-        children: <Widget>[
-          // List
-          Container(
-            child: StreamBuilder(
-              stream: Firestore.instance.collection('users').snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                    ),
-                  );
-                } else {
-                  return ListView.builder(
-                    padding: EdgeInsets.all(10.0),
-                    itemCount: snapshot.data.documents.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        UserModel fakeuserModel = UserModel(
-                          nickname: 'Create Group',
-                          photoUrl:
-                              'https://www.pngitem.com/pimgs/m/144-1447051_transparent-group-icon-png-png-download-customer-icon.png',
-                        );
-                        return UserItem(
-                            user: fakeuserModel,
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => GroupCreateScreen()));
-                            });
-                      } else {
-                        UserModel user = UserModel.fromJson(
-                            snapshot.data.documents[index - 1].data);
-                        if (user.id == currentUserId) {
-                          return SizedBox();
-                        }
-                        return UserItem(
-                            user: user, onPressed: () => finishChoosing(user));
+      body: LoadingStack(
+          isLoading: isLoading,
+          child: Container(
+          child: StreamBuilder(
+            stream: Firestore.instance.collection('users').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                  ),
+                );
+              } else {
+                return ListView.builder(
+                  padding: EdgeInsets.all(10.0),
+                  itemCount: snapshot.data.documents.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      UserModel fakeuserModel = UserModel(
+                        nickname: 'Create Group',
+                        photoUrl: groupPhoto,
+                      );
+                      return UserItem(
+                          user: fakeuserModel,
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => GroupCreateScreen()));
+                          });
+                    } else {
+                      UserModel user = UserModel.fromJson(
+                          snapshot.data.documents[index - 1].data);
+                      if (user.id == currentUserId) {
+                        return SizedBox();
                       }
-                    },
-                  );
-                }
-              },
-            ),
+                      return UserItem(
+                          user: user, onPressed: () => finishChoosing(user));
+                    }
+                  },
+                );
+              }
+            },
           ),
-
-          // Loading
-          Positioned(
-            child: isLoading
-                ? Container(
-                    child: Center(
-                      child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(primaryColor)),
-                    ),
-                    color: Colors.white.withOpacity(0.8),
-                  )
-                : Container(),
-          )
-        ],
+        ),
       ),
     );
   }

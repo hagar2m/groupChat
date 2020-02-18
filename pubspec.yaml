@@ -40,6 +40,7 @@ dependencies:
   flutter_sound: ^2.0.4
   multi_image_picker:  #^4.6.0
   permission_handler: ^4.2.0+hotfix.3
+  provider: 
 
 dev_dependencies:
   flutter_test:

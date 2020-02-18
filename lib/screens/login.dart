@@ -7,10 +7,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home.dart';
 import '../utils/colors.dart';
+import '../widgets/widgets.dart';
 
 class LoginScreen extends StatefulWidget {
-  LoginScreen({Key key, this.title}) : super(key: key);
-  final String title;
   @override
   LoginScreenState createState() => LoginScreenState();
 }
@@ -27,27 +26,27 @@ class LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    isSignedIn();
+    // isSignedIn();
   }
 
-  void isSignedIn() async {
-    setState(() {
-      isLoading = true;
-    });
+  // void isSignedIn() async {
+  //   setState(() {
+  //     isLoading = true;
+  //   });
 
-    prefs = await SharedPreferences.getInstance();
+  //   prefs = await SharedPreferences.getInstance();
 
-    isLoggedIn = await googleSignIn.isSignedIn();
-    if (isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen(currentUserId: prefs.getString('id'))),
-      );
-    }
-    setState(() {
-      isLoading = false;
-    });
-  }
+  //   isLoggedIn = await googleSignIn.isSignedIn();
+  //   if (isLoggedIn) {
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => HomeScreen(currentUserId: prefs.getString('id'))),
+  //     );
+  //   }
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
 
   Future<Null> handleSignIn() async {
     prefs = await SharedPreferences.getInstance();
@@ -104,7 +103,7 @@ class LoginScreenState extends State<LoginScreen> {
         isLoading = false;
       });
 
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(currentUserId: firebaseUser.uid)));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
     } else {
       Fluttertoast.showToast(msg: "Sign in fail");
       this.setState(() {
@@ -118,40 +117,26 @@ class LoginScreenState extends State<LoginScreen> {
     return Scaffold(
     appBar: AppBar(
       title: Text(
-        widget.title,
+        'Login',
         style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
       ),
       centerTitle: true,
     ),
-    body: Stack(
-      children: <Widget>[
-        Center(
-          child: FlatButton(
-              onPressed: handleSignIn,
-              child: Text(
-                'SIGN IN WITH GOOGLE',
-                style: TextStyle(fontSize: 16.0),
-              ),
-              color: Color(0xffdd4b39),
-              highlightColor: Color(0xffff7f7f),
-              splashColor: Colors.transparent,
-              textColor: Colors.white,
-              padding: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0)),
-        ),
-        // Loading
-        Positioned(
-          child: isLoading
-            ? Container(
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                  ),
-                ),
-                color: Colors.white.withOpacity(0.8),
-              )
-            : SizedBox(),
-        ),
-      ],
+    body: LoadingStack(
+      isLoading: isLoading,
+      child: Center(
+        child: FlatButton(
+            onPressed: handleSignIn,
+            child: Text(
+              'SIGN IN WITH GOOGLE',
+              style: TextStyle(fontSize: 16.0),
+            ),
+            color: Color(0xffdd4b39),
+            highlightColor: Color(0xffff7f7f),
+            splashColor: Colors.transparent,
+            textColor: Colors.white,
+            padding: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0)),
+      ),
     ));
   }
 }
