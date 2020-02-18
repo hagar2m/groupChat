@@ -37,29 +37,25 @@ class FullPhotoScreen extends StatefulWidget {
 class FullPhotoScreenState extends State<FullPhotoScreen> {
   int currentIndex;
   bool verticalGallery = true;
+  PageController page;
 
   @override
   void initState() {
-    currentIndex = widget.index;
+    page = PageController (initialPage:  widget.index);
     super.initState();
-  }
-
-  void onPageChanged(int index) {
-    setState(() {
-      currentIndex = index;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
     child: PhotoViewGallery.builder(
       scrollPhysics: const BouncingScrollPhysics(),
       itemCount: widget.images.length,
       scrollDirection: verticalGallery ? Axis.vertical : Axis.horizontal,
+      pageController: page,
       builder: (BuildContext context, int index) {
         return PhotoViewGalleryPageOptions(
-          
           imageProvider: NetworkImage(widget.images[index]),
           initialScale: PhotoViewComputedScale.contained * 0.8,
           heroAttributes: PhotoViewHeroAttributes(tag: widget.images[index]),
@@ -77,7 +73,6 @@ class FullPhotoScreenState extends State<FullPhotoScreen> {
       backgroundDecoration: const BoxDecoration(
         color: Colors.black,
       ),
-      onPageChanged: onPageChanged,
     )
   );
   }

@@ -2,18 +2,23 @@ import 'dart:async';
 import 'dart:io';
 import 'package:after_layout/after_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/colors.dart';
-import './screens.dart';
 import '../widgets/widgets.dart';
-import '../models/models.dart';
+import '../models/menuChoice.dart';
+import '../models/userModel.dart';
+import '../models/thread.dart';
+import '../models/auth.dart';
 import '../services/notificationSettings.dart';
+import '../screens/allUsers.dart';
+import '../screens/groupChat.dart';
+import '../screens/groupCreate.dart';
+import '../screens/login.dart';
+import '../screens/settings.dart';
 
 List<Choice> choices = const <Choice>[
   const Choice(title: 'Settings', icon: Icons.settings),
@@ -22,10 +27,6 @@ List<Choice> choices = const <Choice>[
 ];
 
 class HomeScreen extends StatefulWidget {
-  // final String currentUserId;
-
-  // HomeScreen({Key key, @required this.currentUserId}) : super(key: key);
-
   @override
   State createState() => HomeScreenState();
 }
@@ -36,23 +37,29 @@ class HomeScreenState extends State<HomeScreen> {
   bool isLoading = false;
   final GoogleSignIn googleSignIn = GoogleSignIn();
   String currentUserId;
+  var _isInit = true;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     setupNotification();
+    
   }
   void setupNotification () async {
-    var prefs = await SharedPreferences.getInstance();
-    currentUserId = prefs.getString('id');
+      currentUserId = Provider.of<AuthProvider>(context).currentUserId;
+      // print('currentUserId in home: $currentUserId \n----------');
 
-    NotificationSettings notificationSettings = NotificationSettings(
-      context: context, 
-      currentUserId: currentUserId
-    );
+    if (currentUserId != '' && _isInit== true) {
+      _isInit = false;
+      NotificationSettings notificationSettings = NotificationSettings(
+        context: context, 
+        currentUserId: currentUserId
+      );
 
-    notificationSettings.registerNotification();
-    notificationSettings.configLocalNotification();
+      notificationSettings.registerNotification();
+      notificationSettings.configLocalNotification();
+    }
+    
   }
 
   void onItemMenuPress(Choice choice) {
@@ -153,17 +160,19 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Future<Null> handleSignOut() async {
-    this.setState(() {
-      isLoading = true;
-    });
+    // this.setState(() {
+    //   isLoading = true;
+    // });
 
-    await FirebaseAuth.instance.signOut();
-    await googleSignIn.disconnect();
-    await googleSignIn.signOut();
+    // await FirebaseAuth.instance.signOut();
+    // await googleSignIn.disconnect();
+    // await googleSignIn.signOut();
 
-    this.setState(() {
-      isLoading = false;
-    });
+    // this.setState(() {
+    //   isLoading = false;
+    // });
+
+    Provider.of<AuthProvider>(context, listen: false).signOut();
 
     Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => LoginScreen()),

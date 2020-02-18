@@ -1,43 +1,17 @@
-import 'package:chatdemo/screens/allUsers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart';
 import './utils/colors.dart';
 
-import './screens/screens.dart';
 import './models/auth.dart';
+import './screens/allUsers.dart';
+import './screens/groupCreate.dart';
+import './screens/home.dart';
+import './screens/login.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  bool isLoading = false;
-  bool isLoggedIn = false;
-  final GoogleSignIn googleSignIn = GoogleSignIn();
-
-  @override
-  void initState() { 
-    super.initState();
-    readLocal();
-  }
-  
-  readLocal() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    isLoggedIn = await googleSignIn.isSignedIn();
-   
-    setState(() {
-      isLoading = false;
-    });
-  }
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -46,31 +20,30 @@ class _MyAppState extends State<MyApp> {
             value: AuthProvider(),
           ),
         ],
-        child:  MaterialApp(
-            title: 'Chat Demo',
-            theme: ThemeData(
-              primaryColor: primaryColor,
-            ),
-
-            home: isLoading ? SplashScreen() : isLoggedIn ? HomeScreen() : LoginScreen(),
-
-            debugShowCheckedModeBanner: false,
-            routes: {
-              GroupCreateScreen.routeName: (_) => GroupCreateScreen(),
-              AllUsers.routeName: (_) => AllUsers(),
-            },
-          )
+        child: MyMaterial()
         );
   }
 }
 
-class SplashScreen extends StatelessWidget {
+class MyMaterial extends StatelessWidget {
+  const MyMaterial({
+    Key key,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Text('......'),
-      ),
-    );
+   
+    return MaterialApp(
+        title: 'Chat Demo',
+        theme: ThemeData(
+          primaryColor: primaryColor,
+        ),
+        home: Provider.of<AuthProvider>(context).isLoggedIn ? HomeScreen() : LoginScreen(),
+        debugShowCheckedModeBanner: false,
+        routes: {
+          GroupCreateScreen.routeName: (_) => GroupCreateScreen(),
+          AllUsers.routeName: (_) => AllUsers(),
+        },
+      );
   }
 }

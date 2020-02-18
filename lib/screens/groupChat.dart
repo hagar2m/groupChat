@@ -12,7 +12,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 import '../utils/colors.dart';
 import '../widgets/widgets.dart';
-import '../models/models.dart';
+import '../models/userModel.dart';
 import '../services/imagesService.dart';
 
 class GroupChat extends StatelessWidget {
@@ -122,23 +122,16 @@ class ChatScreenState extends State<ChatScreen> {
 
   _onPickImages() async {
     try {
-      setState(() {
-        isLoading = true;
-      });
+      //1- open dialog to chose camera or select multi images
 
       List<Asset> _assestimages = await imageServices.getImages();
-
+      Fluttertoast.showToast(msg: 'Upload image...');
       List _images = await imageServices.uploadIamges(_assestimages);
-      setState(() {
-        isLoading = false;
-      });
-
+    
       textEditingController.clear();
       imageServices.onSendMessage(_images, 1);
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      Fluttertoast.showToast(msg: 'Upload image falid');
     }
   }
 
@@ -486,14 +479,15 @@ class ChatScreenState extends State<ChatScreen> {
 
       storageTaskSnapshot.ref.getDownloadURL().then((recordUrl) {
         print('download record File: $recordUrl');
-        setState(() {
-          isLoading = false;
+        // setState(() {
+        //   isLoading = false;
           imageServices.onSendMessage(recordUrl, 3);
-        });
+          Fluttertoast.showToast(msg: 'Upload record...');
+        // });
       }, onError: (err) {
-        setState(() {
-          isLoading = false;
-        });
+        // setState(() {
+        //   isLoading = false;
+        // });
         Fluttertoast.showToast(msg: 'This file is not an record');
       });
     }

@@ -4,11 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 import '../utils/colors.dart';
 import '../models/userModel.dart';
+import '../models/auth.dart';
 import '../widgets/widgets.dart';
 
 class GroupCreateScreen extends StatefulWidget {
@@ -40,10 +41,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
   }
 
   readLocal() async {
-    var prefs = await SharedPreferences.getInstance();
-    setState(() {
-      currentUserId = prefs.getString('id');
-    });
+    currentUserId = Provider.of<AuthProvider>(context, listen: false).currentUserId;
   }
 
   void createGroup() async {

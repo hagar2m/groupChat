@@ -9,8 +9,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import '../screens/screens.dart';
-import '../models/models.dart';
+import '../models/userModel.dart';
+import '../screens/groupChat.dart';
+import '../screens/home.dart';
 
 class NotificationSettings {
   BuildContext context;
@@ -37,6 +38,7 @@ class NotificationSettings {
     });
 
     firebaseMessaging.getToken().then((token) {
+      print('*********** \n token: $token - currentUserId: $currentUserId');
       Firestore.instance
           .collection('users')
           .document(currentUserId)

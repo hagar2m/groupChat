@@ -8,7 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../models/models.dart';
+import '../models/userModel.dart';
 
 class ImageServices {
   String threadId;

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:chatdemo/models/auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home.dart';
 import '../utils/colors.dart';
@@ -98,6 +100,9 @@ class LoginScreenState extends State<LoginScreen> {
         await prefs.setString('photoUrl', documents[0]['photoUrl']);
         await prefs.setString('aboutMe', documents[0]['aboutMe']);
       }
+
+      Provider.of<AuthProvider>(context, listen: false).cheackSignIn();
+
       Fluttertoast.showToast(msg: "Sign in success");
       this.setState(() {
         isLoading = false;
