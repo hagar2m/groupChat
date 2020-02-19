@@ -9,7 +9,7 @@ class StickerImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlatButton(
-      onPressed: () => this.onSend(name, 2),
+      onPressed: () => this.onSend(content: name, type: 2),
       child: new Image.asset(
         'images/$name.gif',
         width: 50.0,

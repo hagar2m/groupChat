@@ -51,9 +51,9 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
         currentUserId + DateTime.now().millisecondsSinceEpoch.toString();
     
     firebaseMessaging.subscribeToTopic(threadId);
-
+    String groupName = textEditingController.text;
     Firestore.instance.collection('threads').document(threadId).setData({
-      'name': textEditingController.text,
+      'name': groupName,
       'photoUrl': groupPhoto,
       'id': threadId,
       'users': _selectedUsers
@@ -67,7 +67,7 @@ class GroupCreateScreenState extends State<GroupCreateScreen> {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => GroupChat(
           threadId: threadId, 
-          threadName: textEditingController.text,
+          threadName: groupName,
         )));
   }
 

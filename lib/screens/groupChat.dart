@@ -14,13 +14,14 @@ import '../utils/colors.dart';
 import '../widgets/widgets.dart';
 import '../models/userModel.dart';
 import '../services/imagesService.dart';
+import 'home.dart';
 
 class GroupChat extends StatelessWidget {
   final String threadId;
   final String threadName;
   final UserModel userModel;
   GroupChat(
-      { @required this.threadId, @required this.threadName, this.userModel });
+      {@required this.threadId, @required this.threadName, this.userModel});
 
   @override
   Widget build(BuildContext context) {
@@ -121,15 +122,60 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   _onPickImages() async {
+    showModalBottomSheet(
+        context: context,
+        builder: (builder) {
+          return Container(
+            height: 150,
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: Column(
+              children: <Widget>[
+                Expanded(
+                    child: Text(
+                  'Select the image source',
+                  style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor),
+                )),
+                Expanded(
+                  child: FlatButton(
+                      child: Text(
+                        "Camera",
+                        style: TextStyle(fontSize: 15.0, color: textColor),
+                      ),
+                      onPressed: () async {
+                        _selectMultibleImage(
+                            await imageServices.getImages(cameraEnable: true));
+                        Navigator.pop(context);
+                      }),
+                ),
+                Expanded(
+                  child: FlatButton(
+                      child: Text(
+                        "Gallery",
+                        style: TextStyle(fontSize: 15.0, color: textColor),
+                      ),
+                      onPressed: () async {
+                        _selectMultibleImage(
+                            await imageServices.getImages(cameraEnable: false));
+                        Navigator.pop(context);
+                      }),
+                )
+              ],
+            ),
+          );
+        });
+  }
+
+  _selectMultibleImage(List<Asset> assestimages) async {
     try {
       //1- open dialog to chose camera or select multi images
-
-      List<Asset> _assestimages = await imageServices.getImages();
       Fluttertoast.showToast(msg: 'Upload image...');
-      List _images = await imageServices.uploadIamges(_assestimages);
-    
+      List _images = await imageServices.uploadIamges(assestimages);
+
       textEditingController.clear();
-      imageServices.onSendMessage(_images, 1);
+      onSendMessage(content: _images, type: 1);
     } catch (e) {
       Fluttertoast.showToast(msg: 'Upload image falid');
     }
@@ -141,11 +187,15 @@ class ChatScreenState extends State<ChatScreen> {
         isShowSticker = false;
       });
     } else {
-      Firestore.instance
-          .collection('users')
-          .document(currentUserId)
-          .updateData({'chattingWith': null});
-      Navigator.pop(context);
+      // Firestore.instance
+      //     .collection('users')
+      //     .document(currentUserId)
+      //     .updateData({'chattingWith': null});
+      // Navigator.pop(context);
+      // Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      Navigator.popUntil(context, (route) {
+        return route.settings.isInitialRoute;
+      });
     }
 
     return Future.value(false);
@@ -199,6 +249,50 @@ class ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  void onSendMessage({var content, int type, String recorderTime}) {
+    // type: 0 = text, 1 = image, 2 = sticker, 3 = record
+    if (type != 1 && content.trim() == '') {
+      Fluttertoast.showToast(msg: 'Nothing to send');
+    } else {
+      textEditingController.clear();
+      String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
+      var documentReference = Firestore.instance
+          .collection('messages')
+          .document(threadId)
+          .collection(threadId)
+          .document(timeStamp);
+
+      Firestore.instance.runTransaction((transaction) async {
+        await transaction.set(
+          documentReference,
+          {
+            'threadId': threadId,
+            'idFrom': currentUserId,
+            'idTo': selectedUser != null ? selectedUser.id : '',
+            'timestamp': timeStamp,
+            'content': type == 1 ? '' : content,
+            'images': type == 1 ? content : [],
+            'type': type,
+            'nameFrom': currentUserName,
+            'photoFrom': currentUserPhoto,
+            'recorderTime': type == 3 ? recorderTime : ''
+          },
+        );
+      });
+
+      Firestore.instance.collection('threads').document(threadId).updateData({
+        'lastMessage': type == 0
+            ? content
+            : type == 1 ? 'photo' : type == 2 ? 'sticker' : 'audio',
+        'lastMessageTime': timeStamp
+        //Firestore.instance.collection('messages').document(widget.threadId).collection(widget.threadId).document(timeStamp)
+      });
+
+      // listScrollController.animateTo(0.0,
+      //     duration: Duration(milliseconds: 300), curve: Curves.easeOut);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -239,15 +333,15 @@ class ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               StickerImage(
                 name: 'mimi1',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
               StickerImage(
                 name: 'mimi2',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
               StickerImage(
                 name: 'mimi3',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
             ],
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -257,15 +351,15 @@ class ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               StickerImage(
                 name: 'mimi4',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
               StickerImage(
                 name: 'mimi5',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
               StickerImage(
                 name: 'mimi6',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
             ],
           ),
@@ -274,15 +368,15 @@ class ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               StickerImage(
                 name: 'mimi7',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
               StickerImage(
                 name: 'mimi8',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
               StickerImage(
                 name: 'mimi9',
-                onSend: imageServices.onSendMessage,
+                onSend: onSendMessage,
               ),
             ],
           )
@@ -409,7 +503,7 @@ class ChatScreenState extends State<ChatScreen> {
         // Button send message
         _buildMsgBtn(
           onPreesed: () =>
-              imageServices.onSendMessage(textEditingController.text, 0),
+              onSendMessage(content: textEditingController.text, type: 0),
         )
       ],
     );
@@ -481,8 +575,9 @@ class ChatScreenState extends State<ChatScreen> {
         print('download record File: $recordUrl');
         // setState(() {
         //   isLoading = false;
-          imageServices.onSendMessage(recordUrl, 3);
-          Fluttertoast.showToast(msg: 'Upload record...');
+        print('Recorder text: $_recorderTxt');
+        onSendMessage(content: recordUrl, type: 3, recorderTime: _recorderTxt);
+        Fluttertoast.showToast(msg: 'Upload record...');
         // });
       }, onError: (err) {
         // setState(() {

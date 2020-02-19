@@ -27,6 +27,7 @@ List<Choice> choices = const <Choice>[
 ];
 
 class HomeScreen extends StatefulWidget {
+  static String routeName = '/home';
   @override
   State createState() => HomeScreenState();
 }
@@ -57,7 +58,7 @@ class HomeScreenState extends State<HomeScreen> {
       );
 
       notificationSettings.registerNotification();
-      notificationSettings.configLocalNotification();
+      // notificationSettings.configLocalNotification();
     }
     
   }

@@ -24,13 +24,14 @@ class ImageServices {
     @required this.currentUserPhoto
   });
 
-  Future<List> getImages() async {
+  Future<List> getImages({bool cameraEnable}) async {
     requestPermission();
     List<Asset> resultList;
     // String error;
     try {
       resultList = await MultiImagePicker.pickImages(
         maxImages: 5,
+        enableCamera: cameraEnable ?? false
       );
     } on Exception catch (e) {
       print('error: ${e.toString()}');
@@ -43,18 +44,6 @@ class ImageServices {
 
     return resultList;
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    // if (!mounted) return;
-
-    // if (error == null) {
-    //   // setState(() {
-    //     // isLoading = true;
-    //     uploadFile(resultList);
-    //     //  error = 'No Error Dectected';
-    //   // });
-    // }
   }
 
   Future<void> requestPermission() async {
@@ -98,51 +87,7 @@ class ImageServices {
     return _images;
   }
 
-  void onSendMessage(var content, int type) {
-    // type: 0 = text, 1 = image, 2 = sticker, 3 = record
-    if (type != 1 && content.trim() == '') {
-      Fluttertoast.showToast(msg: 'Nothing to send');
-    } else {
-      // textEditingController.clear();
-      String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
-      var documentReference = Firestore.instance
-          .collection('messages')
-          .document(threadId)
-          .collection(threadId)
-          .document(timeStamp);
-
-      Firestore.instance.runTransaction((transaction) async {
-        await transaction.set(
-          documentReference,
-          {
-            'threadId': threadId,
-            'idFrom': currentUserId,
-            'idTo': selectedUser != null ? selectedUser.id : '',
-            'timestamp': timeStamp,
-            'content': type == 1 ? '' : content,
-            'images': type == 1 ? content : [],
-            'type': type,
-            'nameFrom': currentUserName,
-            'photoFrom': currentUserPhoto,
-          },
-        );
-      });
-
-      Firestore.instance
-          .collection('threads')
-          .document(threadId)
-          .updateData({
-        'lastMessage': type == 0
-            ? content
-            : type == 1 ? 'photo' : type == 2 ? 'sticker' : 'audio',
-        'lastMessageTime': timeStamp
-        //Firestore.instance.collection('messages').document(widget.threadId).collection(widget.threadId).document(timeStamp)
-      });
-
-      // listScrollController.animateTo(0.0,
-      //     duration: Duration(milliseconds: 300), curve: Curves.easeOut);
-    }
-  }
+ 
 
   
  

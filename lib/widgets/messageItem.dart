@@ -17,11 +17,11 @@ class MessageItem extends StatefulWidget {
     @required this.flutterSound,
   });
 
-  String currentUserId;
-  var document;
-  FlutterSound flutterSound;
-  int index;
-  List listMessage;
+  final String currentUserId;
+  final document;
+  final FlutterSound flutterSound;
+  final int index;
+  final List listMessage;
 
   @override
   _MessageItemState createState() => _MessageItemState();
@@ -29,7 +29,7 @@ class MessageItem extends StatefulWidget {
 
 class _MessageItemState extends State<MessageItem> {
   double maxDuration = 1.0;
-  String playerTxt;
+  String playerTxt = '00:00:00';
   double sliderCurrentPosition = 0.0;
 
   StreamSubscription _playerSubscription;
@@ -169,7 +169,7 @@ class _MessageItemState extends State<MessageItem> {
                   ? _imagesWidget()
                   // Sticker
                   : widget.document['type'] == 3
-                      ? _voiceContainer(widget.document['content'])
+                      ? _voiceContainer(widget.document['content'], widget.document['recorderTime'])
                       : _stickerWidget(),
         ],
         mainAxisAlignment: MainAxisAlignment.end,
@@ -367,7 +367,7 @@ class _MessageItemState extends State<MessageItem> {
       return _stickerWidget();
     } else if (widget.document['type'] == 3) {
       // record
-      return _voiceContainer(widget.document['content']);
+      return _voiceContainer(widget.document['content'], widget.document['recorderTime']);
     }
     return Container();
   }
@@ -383,7 +383,7 @@ class _MessageItemState extends State<MessageItem> {
     );
   }
 
-  _voiceContainer(String voiceUrl) {
+  _voiceContainer(String voiceUrl, String recorderTime) {
     return Container(
       // width: MediaQuery.of(context).size.width * 0.55,
       decoration: BoxDecoration(
@@ -411,14 +411,32 @@ class _MessageItemState extends State<MessageItem> {
                 enabledThumbRadius: 7.0,
               ),
             ),
-            child: Slider(
-                value: sliderCurrentPosition,
-                // inactiveColor: thirdColor,
-                // activeColor: primaryColor,
-                min: 0.0,
-                max: maxDuration,
-                onChanged: (double value) => seekToPlayer(value.toInt()),
-                divisions: maxDuration.toInt()),
+            child: Container(
+              width: 250.0,
+              child: Column(
+                children: <Widget>[
+                  Slider(
+                        value: sliderCurrentPosition,
+                        // inactiveColor: thirdColor,
+                        // activeColor: primaryColor,
+                        min: 0.0,
+                        max: maxDuration,
+                        onChanged: (double value) => seekToPlayer(value.toInt()),
+                        divisions: maxDuration.toInt()),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text('$playerTxt',style: TextStyle(color: thirdColor),),
+                        Text('$recorderTime',style: TextStyle(color: thirdColor),)
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 5.0,)
+                ],
+              ),
+            ),
           )),
         ],
       ),
